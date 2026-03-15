@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>KlamsiPrints - 3D Druck Service</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* Floating Shapes */
+    .floating-shape {
+      position: fixed;
+      width: 100px;
+      height: 100px;
+      border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+      background: linear-gradient(45deg, #ff3366, #3366ff);
+      opacity: 0.1;
+      filter: blur(40px);
+      animation: float 6s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    .shape-1 {
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .shape-2 {
+      bottom: 20%;
+      right: 10%;
+      background: linear-gradient(45deg, #33ff66, #ff33cc);
+      animation-delay: -2s;
+    }
+
+    .shape-3 {
+      top: 50%;
+      right: 20%;
+      background: linear-gradient(45deg, #ff9933, #33ffff);
+      animation-delay: -4s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(180deg);
+      }
+
+      100% {
+        transform: translateY(0px) rotate(360deg);
+      }
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      background: rgba(20, 20, 30, 0.6);
+      border-radius: 100px;
+      padding: 0.8rem 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff3366, #33ff66, #3366ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: gradientFlow 6s ease infinite;
+      cursor: pointer;
+      letter-spacing: -0.5px;
+    }
+
+    @keyframes gradientFlow {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      padding: 0.5rem 0;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    .nav-links a.active {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #ff3366, #3366ff);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a.active::after {
+      width: 100%;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .page.active-page {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========== HOME PAGE ========== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    /* Ultra Smooth Animated Headline */
+    .animated-headline {
+      font-size: 5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg,
+          #ff3366, #ff6b3b, #ffb347, #33ff66, #33ccff, #8a4fff, #ff33cc);
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: smoothRainbow 10s ease infinite;
+      display: inline-block;
+      padding: 0 0.5rem;
+    }
+
+    @keyframes smoothRainbow {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .static-text {
+      color: #fff;
+      display: inline-block;
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 3rem;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 50px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      z-index: 1;
+      cursor: pointer;
+      border: none;
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff3366, #ff33cc);
+      color: #fff;
+      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 51, 102, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-3px);
+    }
+
+    .btn-primary-services {
+      background: linear-gradient(135deg, #ff3366, #ff33cc);
+      color: #fff;
+      border: none;
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: block;
+      margin: 3rem auto 0;
+      width: fit-content;
+      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
+    }
+
+    .btn-primary-services:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 4rem 0 3rem;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 2rem 2.5rem;
+      min-width: 180px;
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .stat-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 51, 102, 0.3);
+      box-shadow: 0 25px 40px -20px #ff3366;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff3366, #33ff66);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      letter-spacing: 0.5px;
+    }
+
+    .services-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    .service-card {
+      padding: 2rem;
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .service-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255, 51, 102, 0.3);
+      box-shadow: 0 25px 40px -20px #ff3366;
+    }
+
+    .service-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff, #cccccc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .service-desc {
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    /* ========== SERVICES PAGE ========== */
+    .page-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .service-detail-card {
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      padding: 2.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .service-detail-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 51, 102, 0.3);
+      box-shadow: 0 25px 40px -20px #ff3366;
+    }
+
+    .service-detail-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ff3366, #3366ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .service-detail-desc {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+
+    .service-features {
+      list-style: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .service-features li {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 0.7rem;
+      padding-left: 1.5rem;
+      position: relative;
+      font-size: 0.95rem;
+    }
+
+    .service-features li::before {
+      content: '→';
+      color: #ff3366;
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+    }
+
+    .price-tag {
+      display: inline-block;
+      padding: 0.6rem 1.5rem;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.2), rgba(51, 102, 255, 0.2));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    /* ========== PORTFOLIO PAGE ========== */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .portfolio-item {
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .portfolio-item:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255, 51, 102, 0.3);
+      box-shadow: 0 25px 40px -20px #ff3366;
+    }
+
+    .portfolio-image {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .portfolio-item:hover .portfolio-image {
+      transform: scale(1.05);
+    }
+
+    .portfolio-content {
+      padding: 1.8rem;
+    }
+
+    .portfolio-category {
+      color: #ff3366;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .portfolio-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .portfolio-desc {
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    /* ========== ABOUT PAGE - VERGRÖSSERT ========== */
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .about-text {
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      padding: 2.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .about-text h2 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ff3366, #33ff66);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .about-text p {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .team-member {
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 40px;
+      padding: 3.5rem 2.5rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .team-member:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 51, 102, 0.3);
+      box-shadow: 0 25px 40px -20px #ff3366;
+    }
+
+    .member-avatar {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 2rem;
+      display: block;
+      border: 4px solid transparent;
+      background: linear-gradient(135deg, #ff3366, #3366ff) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .member-name {
+      font-size: 2.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .member-role {
+      color: #ff3366;
+      font-size: 1.3rem;
+    }
+
+    .tech-stack {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: center;
+    }
+
+    .tech-badge {
+      padding: 0.6rem 1.2rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 50px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .tech-badge:hover {
+      border-color: #ff3366;
+      transform: scale(1.05);
+    }
+
+    /* ========== CONTACT PAGE ========== */
+    .contact-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .contact-form-container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      background: rgba(20, 20, 30, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #ff3366;
+      background: rgba(30, 30, 40, 0.8);
+    }
+
+    .form-group textarea {
+      height: 150px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #ff3366, #ff33cc);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
+    }
+
+    .form-group.checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .form-group.checkbox input {
+      width: auto;
+      margin: 0;
+    }
+
+    .form-group.checkbox label {
+      margin: 0;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* ========== IMPRESSUM PAGE ========== */
+    .impressum-content {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 3rem;
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .impressum-content h2 {
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, #ff3366, #3366ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 2rem 0 1rem 0;
+    }
+
+    .impressum-content h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .impressum-content p {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .impressum-content a {
+      color: #ff3366;
+      text-decoration: none;
+    }
+
+    .impressum-content a:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 5rem;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .social-links a {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .social-links a:hover {
+      color: #ff3366;
+      transform: translateY(-3px);
+    }
+
+    /* Loading Animation */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(255, 51, 102, 0.2);
+      border-radius: 50%;
+      border-top-color: #ff3366;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ========== VERBESSERTE HANDY-SKALIERUNG ========== */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      nav {
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+      }
+
+      .logo {
+        font-size: 1.3rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .animated-headline {
+        font-size: 2.5rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        padding: 0 0.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        padding: 0 1rem;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .stats {
+        flex-direction: column;
+        gap: 1rem;
+        margin: 3rem 0 2rem;
+      }
+
+      .stat-item {
+        padding: 1.5rem;
+        min-width: unset;
+        width: 100%;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+      }
+
+      .services-preview {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .about-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .about-text {
+        padding: 1.8rem;
+      }
+
+      .about-text h2 {
+        font-size: 1.6rem;
+      }
+
+      .team-member {
+        padding: 2.5rem 1.5rem;
+      }
+
+      .member-avatar {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 1.5rem;
+      }
+
+      .member-name {
+        font-size: 1.8rem;
+      }
+
+      .member-role {
+        font-size: 1.1rem;
+      }
+
+      .page-title {
+        font-size: 2.2rem;
+      }
+
+      .page-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+      }
+
+      .service-detail-card {
+        padding: 1.8rem;
+      }
+
+      .service-detail-title {
+        font-size: 1.5rem;
+      }
+
+      .contact-form-container {
+        padding: 0 0.5rem;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 0.9rem 1rem;
+      }
+
+      .form-group.checkbox {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+
+      .impressum-content {
+        padding: 1.8rem;
+      }
+
+      .impressum-content h2 {
+        font-size: 1.5rem;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem 0;
+      }
+
+      .social-links {
+        justify-content: center;
+      }
+    }
+
+    /* Für sehr kleine Handys */
+    @media (max-width: 480px) {
+      .animated-headline {
+        font-size: 2rem;
+      }
+
+      .btn-primary-services {
+        width: 90%;
+      }
+
+      .member-avatar {
+        width: 120px;
+        height: 120px;
+      }
+
+      .member-name {
+        font-size: 1.5rem;
+      }
+
+      .member-role {
+        font-size: 1rem;
+      }
+    }
+
+    /* Tablets */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .services-preview {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .portfolio-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .about-content {
+        gap: 1.5rem;
+      }
+
+      .animated-headline {
+        font-size: 4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Animation -->
+  <div class="loading" id="loading">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Floating Background Shapes -->
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+  <div class="floating-shape shape-3"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Navigation -->
+    <nav>
+      <div class="logo" onclick="switchPage('home')">KlamsiPrints</div>
+      <div class="nav-links">
+        <a class="active" onclick="switchPage('home')" id="nav-home">Home</a>
+        <a onclick="switchPage('services')" id="nav-services">Services</a>
+        <a onclick="switchPage('portfolio')" id="nav-portfolio">Portfolio</a>
+        <a onclick="switchPage('about')" id="nav-about">Über uns</a>
+        <a onclick="switchPage('contact')" id="nav-contact">Kontakt</a>
+      </div>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div id="home-page" class="page active-page">
+      <div class="main-content">
+        <h1 class="animated-headline">
+          <span class="static-text">3D Druck</span><br>
+          <span class="gradient-text">Idee wird Realität</span>
+        </h1>
+
+        <p class="subtitle">
+          Verwandeln Sie Ihre Ideen in greifbare Realität. Mit modernster 3D Druck Technologie
+          und kreativem Design realisieren wir Ihre Projekte.
+        </p>
+
+        <div class="cta-buttons">
+          <button class="btn btn-primary" onclick="switchPage('contact')">Jetzt Projekt starten</button>
+          <button class="btn btn-secondary" onclick="switchPage('portfolio')">Portfolio ansehen</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Erfolgreiche Projekte</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">24h</div>
+            <div class="stat-label">Express-Service</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Kundenzufriedenheit</div>
+          </div>
+        </div>
+
+        <div class="services-preview">
+          <div class="service-card" onclick="switchPage('services')">
+            <h3 class="service-title">Individuelles Design</h3>
+            <p class="service-desc">Von der Idee bis zum fertigen 3D-Modell - wir designen Ihre Vision.</p>
+          </div>
+          <div class="service-card" onclick="switchPage('services')">
+            <h3 class="service-title">Schnelle Produktion</h3>
+            <p class="service-desc">Modernste Drucker für schnelle und präzise Ergebnisse.</p>
+          </div>
+          <div class="service-card" onclick="switchPage('services')">
+            <h3 class="service-title">Hochwertiges Material</h3>
+            <p class="service-desc">Wir drucken mit PLA - dem weit verbreitetsten Filament der Welt.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES PAGE -->
+    <div id="services-page" class="page">
+      <h1 class="page-title">Unsere <span class="gradient-text">Services</span></h1>
+      <p class="page-subtitle">Maßgeschneiderte 3D Druck Lösungen für jede Anforderung</p>
+
+      <div class="services-grid">
+        <div class="service-detail-card">
+          <h2 class="service-detail-title">3D Design & Modellierung</h2>
+          <p class="service-detail-desc">Wir erstellen präzise 3D-Modelle nach Ihren Vorstellungen oder optimieren
+            bestehende Designs für den 3D Druck.</p>
+          <ul class="service-features">
+            <li>CAD-Modellierung</li>
+            <li>Design-Optimierung</li>
+          </ul>
+          <div class="price-tag">ab 19€</div>
+        </div>
+
+        <div class="service-detail-card">
+          <h2 class="service-detail-title">Druck ihrer eigenen Datei</h2>
+          <p class="service-detail-desc">Wir drucken ihre eigene STL-Datei und versenden sie zu Ihnen.
+          </p>
+          <ul class="service-features">
+            <li>Hohe Genauigkeit</li>
+            <li>Große Bauteile bis 256x256x256mm</li>
+          </ul>
+          <div class="price-tag">ab 10€</div>
+        </div>
+      </div>
+
+      <button class="btn-primary-services" onclick="switchPage('contact')">Jetzt Anfragen</button>
+    </div>
+
+    <!-- PORTFOLIO PAGE -->
+    <div id="portfolio-page" class="page">
+      <h1 class="page-title">Unser <span class="gradient-text">Portfolio</span></h1>
+      <p class="page-subtitle">Eine Auswahl unserer besten Projekte</p>
+
+      <div class="portfolio-grid">
+        <div class="portfolio-item">
+          <img src="img/besteMAMA.jpg" alt="BesteMamaDruck" class="portfolio-image">
+          <div class="portfolio-content">
+            <div class="portfolio-category">Geschenke</div>
+            <h3 class="portfolio-title">Angepasste Geschenke</h3>
+            <p class="portfolio-desc">Ein 3D-gedrucktes Schild eignet sich als das perfekte Geschenk!</p>
+          </div>
+        </div>
+
+        <div class="portfolio-item">
+          <img src="img/sternenkueche.jpg" alt="SternekücheDruck" class="portfolio-image">
+          <div class="portfolio-content">
+            <div class="portfolio-category">Dekoration</div>
+            <h3 class="portfolio-title">Schöne Dekoration</h3>
+            <p class="portfolio-desc">Aufsteller welche Ihr Zuhause verschönern.</p>
+          </div>
+        </div>
+
+        <div class="portfolio-item">
+          <img src="img/IMG_4792.jpg" alt="Spielverbesserungen" class="portfolio-image">
+          <div class="portfolio-content">
+            <div class="portfolio-category">Spielverbesserungen</div>
+            <h3 class="portfolio-title">Brettspiel-Erweiterungen</h3>
+            <p class="portfolio-desc">Maßgefertigte Erweiterungen und Erleichterungen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT PAGE - VERGRÖSSERT -->
+    <div id="about-page" class="page">
+      <h1 class="page-title">Über <span class="gradient-text">KlamsiPrints</span></h1>
+      <p class="page-subtitle">Leidenschaft für 3D Druck seit 04.2025</p>
+
+      <div class="about-content">
+        <div class="about-text">
+          <h2>Unsere Geschichte</h2>
+          <p>KlamsiPrints wurde aus der Leidenschaft für moderne Fertigungstechnologien geboren.</p>
+          <p>Wir glauben daran, dass jeder eine Idee hat, die es wert ist, verwirklicht zu werden. Mit unserer
+            Einschätzung und Begeisterung für 3D Druck helfen wir Ihnen, Ihre Visionen in die reale Welt zu bringen.</p>
+          <h2>Unsere Philosophie</h2>
+          <p>Qualität, Präzision und Kundenzufriedenheit steht bei uns an erster Stelle. Wir beraten Sie umfassend,
+            finden die beste Lösung für Ihr Projekt und produzieren mit höchster Sorgfalt.</p>
+          <div class="tech-stack">
+            <span class="tech-badge">PLA Druck</span>
+            <span class="tech-badge">CAD Design</span>
+            <span class="tech-badge">3D Objekte</span>
+          </div>
+        </div>
+
+        <div class="team-grid">
+          <div class="team-member">
+            <img src="img/luca.jpg" alt="Gründer" class="member-avatar">
+            <h3 class="member-name">Luca Klaminger</h3>
+            <div class="member-role">Gründer & 3D-Experte</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT PAGE -->
+<div id="contact-page" class="page">
+  <h1 class="page-title">Kontakt <span class="gradient-text">& Anfrage</span></h1>
+  <p class="page-subtitle" style="margin-bottom: 0.5rem;">Lassen Sie uns Ihr Projekt besprechen</p>
+  
+  <p style="text-align: center; color: #ff3366; margin-bottom: 2rem; font-size: 1rem; font-weight: 500; letter-spacing: 0.5px;">
+    ⚡ Rückantwort erfolgt innerhalb von 24h per E-Mail
+  </p>
+
+  <div class="contact-container">
+    <div class="contact-form-container">
+      <form action="https://formspree.io/f/xgvkjzvr" method="POST">
+
+            <div class="form-group">
+              <label for="name">Name *</label>
+              <input type="text" id="name" name="name" placeholder="Ihr vollständiger Name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" placeholder="ihre@email.de" required>
+            </div>
+
+            <div class="form-group">
+              <label for="service">Gewünschter Service</label>
+              <select id="service" name="service">
+                <option value="3D Design">3D Design & Modellierung</option>
+                <option value="FDM Druck">FDM 3D Druck</option>
+                <option value="Beratung">Beratung</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="message">Nachricht *</label>
+              <textarea id="message" name="message" placeholder="Beschreiben Sie Ihr Projekt..." required></textarea>
+            </div>
+
+            <div class="form-group checkbox">
+              <input type="checkbox" id="consent" name="consent" required>
+              <label for="consent">Ich stimme der Speicherung meiner Daten zu *</label>
+            </div>
+
+            <button type="submit" class="submit-btn">Anfrage senden</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPRESSUM PAGE -->
+    <div id="impressum-page" class="page">
+      <h1 class="page-title">Impressum</h1>
+      <p class="page-subtitle">Rechtliche Angaben</p>
+
+      <div class="impressum-content">
+        <h2>Angaben gemäß § 5 TMG</h2>
+        <p>
+          Luca Klaminger<br>
+          KlamsiPrints<br>
+          Schillerstraße 13<br>
+          8160 Weiz<br>
+          Österreich
+        </p>
+
+        <h2>Kontakt</h2>
+        <p>
+          E-Mail: luciklaminger@gmail.com
+        </p>
+
+        <h2>Verantwortlich für den Inhalt</h2>
+        <p>
+          Luca Klaminger<br>
+          Schillerstraße 13<br>
+          8160 Weiz
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div>&copy; 2026 KlamsiPrints. Alle Rechte vorbehalten.</div>
+      <div style="display: flex; gap: 0.5rem;">
+        <a onclick="switchPage('impressum')"
+          style="color: #ff3366; text-decoration: none; cursor: pointer;">Impressum</a>
+      </div>
+      <div class="social-links">
+        <a href="https://www.instagram.com/klamsimedia/" target="_blank"><i class="fab fa-instagram"></i></a>
+        <a onclick="switchPage('contact')"><i class="fas fa-envelope"></i></a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Loading Animation
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        document.getElementById('loading').style.opacity = '0';
+        setTimeout(function () {
+          document.getElementById('loading').style.display = 'none';
+        }, 500);
+      }, 1000);
+    });
+
+    // Page Switching Function
+    function switchPage(pageName) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active-page');
+      });
+      document.getElementById(pageName + '-page').classList.add('active-page');
+
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.getElementById('nav-' + pageName).classList.add('active');
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Parallax effect for floating shapes
+    document.addEventListener('mousemove', (e) => {
+      const shapes = document.querySelectorAll('.floating-shape');
+      const mouseX = e.clientX / window.innerWidth;
+      const mouseY = e.clientY / window.innerHeight;
+
+      shapes.forEach((shape, index) => {
+        const speed = (index + 1) * 20;
+        const x = (mouseX - 0.5) * speed;
+        const y = (mouseY - 0.5) * speed;
+        shape.style.transform = `translate(${x}px, ${y}px) rotate(${x}deg)`;
+      });
+    });
+
+    // Intersection Observer for fade-in animation
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.service-card, .stat-item, .service-detail-card, .portfolio-item, .team-member').forEach(element => {
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
+      element.style.transition = 'all 0.6s ease';
+      observer.observe(element);
+    });
+  </script>
+</body>
+
+</html>
