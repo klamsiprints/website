@@ -608,12 +608,8 @@
       object-fit: cover;
       margin: 0 auto 2rem;
       display: block;
-      border: 4px solid transparent;
-      background: linear-gradient(135deg, #ff3366, #3366ff) border-box;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+      border: 4px solid #ff3366;
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.3);
     }
 
     .member-name {
@@ -847,16 +843,29 @@
       }
 
       nav {
-        padding: 0.6rem 1.2rem;
+        padding: 0.6rem 1rem;
         border-radius: 50px;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
       .logo {
         font-size: 1.3rem;
+        margin-right: auto;
       }
 
       .nav-links {
-        display: none;
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 0.3rem 0;
+        white-space: nowrap;
       }
 
       .animated-headline {
@@ -898,11 +907,6 @@
       }
 
       .services-preview {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .services-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
       }
@@ -951,14 +955,6 @@
         font-size: 1rem;
         margin-bottom: 2rem;
         padding: 0 1rem;
-      }
-
-      .service-detail-card {
-        padding: 1.8rem;
-      }
-
-      .service-detail-title {
-        font-size: 1.5rem;
       }
 
       .contact-form-container {
@@ -1060,7 +1056,7 @@
       <div class="logo" onclick="switchPage('home')">KlamsiPrints</div>
       <div class="nav-links">
         <a class="active" onclick="switchPage('home')" id="nav-home">Home</a>
-        <a onclick="switchPage('services')" id="nav-services">Services</a>
+        <!--<a onclick="switchPage('services')" id="nav-services">Services</a> -->
         <a onclick="switchPage('portfolio')" id="nav-portfolio">Portfolio</a>
         <a onclick="switchPage('about')" id="nav-about">Über uns</a>
         <a onclick="switchPage('contact')" id="nav-contact">Kontakt</a>
@@ -1101,15 +1097,15 @@
         </div>
 
         <div class="services-preview">
-          <div class="service-card" onclick="switchPage('services')">
+          <div class="service-card" onclick="switchPage('contact')">
             <h3 class="service-title">Individuelles Design</h3>
             <p class="service-desc">Von der Idee bis zum fertigen 3D-Modell - wir designen Ihre Vision.</p>
           </div>
-          <div class="service-card" onclick="switchPage('services')">
+          <div class="service-card" onclick="switchPage('contact')">
             <h3 class="service-title">Schnelle Produktion</h3>
             <p class="service-desc">Modernste Drucker für schnelle und präzise Ergebnisse.</p>
           </div>
-          <div class="service-card" onclick="switchPage('services')">
+          <div class="service-card" onclick="switchPage('contact')">
             <h3 class="service-title">Hochwertiges Material</h3>
             <p class="service-desc">Wir drucken mit PLA - dem weit verbreitetsten Filament der Welt.</p>
           </div>
@@ -1117,7 +1113,7 @@
       </div>
     </div>
 
-    <!-- SERVICES PAGE -->
+    <!-- SERVICES PAGE
     <div id="services-page" class="page">
       <h1 class="page-title">Unsere <span class="gradient-text">Services</span></h1>
       <p class="page-subtitle">Maßgeschneiderte 3D Druck Lösungen für jede Anforderung</p>
@@ -1147,7 +1143,7 @@
       </div>
 
       <button class="btn-primary-services" onclick="switchPage('contact')">Jetzt Anfragen</button>
-    </div>
+    </div>-->
 
     <!-- PORTFOLIO PAGE -->
     <div id="portfolio-page" class="page">
@@ -1203,6 +1199,9 @@
             <span class="tech-badge">CAD Design</span>
             <span class="tech-badge">3D Objekte</span>
           </div>
+          <h2>Unsere Drucker</h2>
+          <p>- Bambu Lab P2S</p>
+          <p>- Bambu Lab A1</p>
         </div>
 
         <div class="team-grid">
@@ -1216,17 +1215,18 @@
     </div>
 
     <!-- CONTACT PAGE -->
-<div id="contact-page" class="page">
-  <h1 class="page-title">Kontakt <span class="gradient-text">& Anfrage</span></h1>
-  <p class="page-subtitle" style="margin-bottom: 0.5rem;">Lassen Sie uns Ihr Projekt besprechen</p>
-  
-  <p style="text-align: center; color: #ff3366; margin-bottom: 2rem; font-size: 1rem; font-weight: 500; letter-spacing: 0.5px;">
-    ⚡ Rückantwort erfolgt innerhalb von 24h per E-Mail
-  </p>
+    <div id="contact-page" class="page">
+      <h1 class="page-title">Kontakt <span class="gradient-text">& Anfrage</span></h1>
+      <p class="page-subtitle" style="margin-bottom: 0.5rem;">Lassen Sie uns Ihr Projekt besprechen</p>
 
-  <div class="contact-container">
-    <div class="contact-form-container">
-      <form action="https://formspree.io/f/xgvkjzvr" method="POST">
+      <p
+        style="text-align: center; color: #ff3366; margin-bottom: 2rem; font-size: 1rem; font-weight: 500; letter-spacing: 0.5px;">
+        ⚡ Rückantwort erfolgt innerhalb von 24h per E-Mail
+      </p>
+
+      <div class="contact-container">
+        <div class="contact-form-container">
+          <form action="https://formspree.io/f/xgvkjzvr" method="POST">
 
             <div class="form-group">
               <label for="name">Name *</label>
@@ -1280,14 +1280,12 @@
 
         <h2>Kontakt</h2>
         <p>
-          E-Mail: luciklaminger@gmail.com
+          E-Mail: klamsiprints@gmail.com
         </p>
 
         <h2>Verantwortlich für den Inhalt</h2>
         <p>
-          Luca Klaminger<br>
-          Schillerstraße 13<br>
-          8160 Weiz
+          Luca Klaminger
         </p>
       </div>
     </div>
