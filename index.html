@@ -1,1373 +1,1496 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>KlamsiPrints - 3D Druck Service</title>
+  <title>KlamsiPrints – 3D Druck Service</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg: #050507;
+      --surface: rgba(12,12,18,0.85);
+      --surface2: rgba(20,20,30,0.6);
+      --accent: #ff2d55;
+      --accent2: #00f5d4;
+      --accent3: #f7b500;
+      --text: #f0f0f0;
+      --muted: rgba(240,240,240,0.5);
+      --border: rgba(255,255,255,0.06);
+      --glow: rgba(255,45,85,0.35);
+      --glow2: rgba(0,245,212,0.25);
     }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Space Grotesk', sans-serif;
-      background-color: #0a0a0a;
-      color: #ffffff;
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       overflow-x: hidden;
+      cursor: none;
     }
 
-    /* Floating Shapes */
-    .floating-shape {
+    /* ── CUSTOM CURSOR ── */
+    #cursor-dot {
       position: fixed;
-      width: 100px;
-      height: 100px;
-      border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-      background: linear-gradient(45deg, #ff3366, #3366ff);
-      opacity: 0.1;
-      filter: blur(40px);
-      animation: float 6s ease-in-out infinite;
-      z-index: -1;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%,-50%);
+      transition: transform 0.05s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--accent2);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99998;
+      transform: translate(-50%,-50%);
+      transition: all 0.15s cubic-bezier(.23,1,.32,1);
+      opacity: 0.7;
+    }
+    body:hover #cursor-dot { opacity:1; }
+
+    /* ── CANVAS BG ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .shape-1 {
-      top: 20%;
-      left: 10%;
-      animation-delay: 0s;
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.4;
     }
 
-    .shape-2 {
-      bottom: 20%;
-      right: 10%;
-      background: linear-gradient(45deg, #33ff66, #ff33cc);
-      animation-delay: -2s;
-    }
-
-    .shape-3 {
-      top: 50%;
-      right: 20%;
-      background: linear-gradient(45deg, #ff9933, #33ffff);
-      animation-delay: -4s;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0px) rotate(0deg);
-      }
-
-      50% {
-        transform: translateY(-20px) rotate(180deg);
-      }
-
-      100% {
-        transform: translateY(0px) rotate(360deg);
-      }
-    }
-
-    /* Main Container */
+    /* ── MAIN CONTAINER ── */
     .container {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1.5rem 2rem;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* Navigation */
+    /* ── NAV ── */
     nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(10px);
-      background: rgba(20, 20, 30, 0.6);
-      border-radius: 100px;
-      padding: 0.8rem 2rem;
+      background: rgba(5,5,7,0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem 2rem;
       margin-bottom: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      position: sticky;
+      top: 1.5rem;
+      z-index: 100;
     }
 
     .logo {
-      font-size: 1.8rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ff3366, #33ff66, #3366ff);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 200%;
-      animation: gradientFlow 6s ease infinite;
       cursor: pointer;
-      letter-spacing: -0.5px;
+      transition: opacity 0.2s;
     }
+    .logo:hover { opacity: 0.8; }
 
-    @keyframes gradientFlow {
-      0% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2.5rem;
-    }
-
+    .nav-links { display:flex; gap:2.5rem; align-items: center; }
     .nav-links a {
-      color: rgba(255, 255, 255, 0.8);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
       text-decoration: none;
-      font-weight: 500;
-      position: relative;
-      padding: 0.5rem 0;
       cursor: pointer;
-      transition: color 0.3s ease;
-      font-size: 1rem;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-links a::before {
+      content: '//';
+      color: var(--accent);
+      margin-right: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--text);
+    }
+    .nav-links a:hover::before, .nav-links a.active::before { opacity: 1; }
+
+    /* ── PAGE SYSTEM ── */
+    .page { display: none; }
+    .page.active-page { display: block; animation: pageIn 0.6s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes pageIn {
+      from { opacity:0; transform: translateY(30px); }
+      to   { opacity:1; transform: translateY(0); }
     }
 
-    .nav-links a:hover {
-      color: #fff;
-    }
-
-    .nav-links a.active {
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #ff3366, #3366ff);
-      transition: width 0.3s ease;
-      border-radius: 2px;
-    }
-
-    .nav-links a:hover::after,
-    .nav-links a.active::after {
-      width: 100%;
-    }
-
-    /* Pages */
-    .page {
-      display: none;
-      animation: fadeIn 0.5s ease;
-    }
-
-    .page.active-page {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ========== HOME PAGE ========== */
-    .main-content {
-      flex: 1;
+    /* ══════════════════════════
+       HOME PAGE
+    ══════════════════════════ */
+    .hero {
+      min-height: 85vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
-      text-align: center;
-      margin: 2rem 0;
-    }
-
-    /* Ultra Smooth Animated Headline */
-    .animated-headline {
-      font-size: 5rem;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
+      align-items: flex-start;
+      padding: 4rem 0 2rem;
       position: relative;
     }
 
-    .gradient-text {
-      background: linear-gradient(90deg,
-          #ff3366, #ff6b3b, #ffb347, #33ff66, #33ccff, #8a4fff, #ff33cc);
-      background-size: 400% 400%;
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 10rem);
+      line-height: 0.92;
+      letter-spacing: 2px;
+      margin-bottom: 2rem;
+    }
+
+    .hero-title .line-1 { color: var(--text); display: block; }
+    .hero-title .line-2 {
+      display: block;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+      background-size: 200% 100%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: smoothRainbow 10s ease infinite;
-      display: inline-block;
-      padding: 0 0.5rem;
+      animation: gradShift 4s linear infinite;
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
     }
 
-    @keyframes smoothRainbow {
-      0% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    .static-text {
-      color: #fff;
-      display: inline-block;
-      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
-    }
-
-    .subtitle {
-      font-size: 1.3rem;
-      color: rgba(255, 255, 255, 0.7);
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
       margin-bottom: 3rem;
-      max-width: 700px;
-      line-height: 1.6;
     }
 
-    .cta-buttons {
+    .hero-cta {
       display: flex;
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .btn {
-      padding: 1rem 2.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      border-radius: 50px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      z-index: 1;
-      cursor: pointer;
-      border: none;
-      display: inline-block;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #ff3366, #ff33cc);
-      color: #fff;
-      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    .btn-secondary:hover {
-      border-color: rgba(255, 51, 102, 0.5);
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-3px);
-    }
-
-    .btn-primary-services {
-      background: linear-gradient(135deg, #ff3366, #ff33cc);
-      color: #fff;
-      border: none;
-      padding: 1rem 2.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 50px;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      display: block;
-      margin: 3rem auto 0;
-      width: fit-content;
-      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
-    }
-
-    .btn-primary-services:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
-    }
-
-    .stats {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin: 4rem 0 3rem;
-      width: 100%;
+      gap: 1rem;
       flex-wrap: wrap;
     }
 
-    .stat-item {
-      text-align: center;
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      padding: 2rem 2.5rem;
-      min-width: 180px;
-      transition: all 0.3s ease;
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
-    }
-
-    .stat-item:hover {
-      transform: translateY(-5px);
-      border-color: rgba(255, 51, 102, 0.3);
-      box-shadow: 0 25px 40px -20px #ff3366;
-    }
-
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ff3366, #33ff66);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1.2;
-    }
-
-    .stat-label {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-      letter-spacing: 0.5px;
-    }
-
-    .services-preview {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 2rem;
-      width: 100%;
-    }
-
-    .service-card {
-      padding: 2rem;
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: all 0.3s ease;
-      text-align: left;
-      cursor: pointer;
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
-    }
-
-    .service-card:hover {
-      transform: translateY(-8px);
-      border-color: rgba(255, 51, 102, 0.3);
-      box-shadow: 0 25px 40px -20px #ff3366;
-    }
-
-    .service-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #fff, #cccccc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .service-desc {
-      color: rgba(255, 255, 255, 0.6);
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-    /* ========== SERVICES PAGE ========== */
-    .page-title {
-      font-size: 3.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      text-align: center;
-      line-height: 1.2;
-    }
-
-    .page-subtitle {
-      font-size: 1.2rem;
-      color: rgba(255, 255, 255, 0.6);
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .service-detail-card {
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
-      padding: 2.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: all 0.3s ease;
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
-    }
-
-    .service-detail-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(255, 51, 102, 0.3);
-      box-shadow: 0 25px 40px -20px #ff3366;
-    }
-
-    .service-detail-title {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #ff3366, #3366ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .service-detail-desc {
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.7;
-      margin-bottom: 1.5rem;
+    .btn-main {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
       font-size: 1rem;
-    }
-
-    .service-features {
-      list-style: none;
-      margin-bottom: 1.5rem;
-    }
-
-    .service-features li {
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 0.7rem;
-      padding-left: 1.5rem;
+      padding: 1rem 2.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
       position: relative;
-      font-size: 0.95rem;
+      overflow: hidden;
+      transition: all 0.3s;
+      text-transform: uppercase;
     }
-
-    .service-features li::before {
-      content: '→';
-      color: #ff3366;
+    .btn-main::after {
+      content: '';
       position: absolute;
-      left: 0;
-      font-weight: 600;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    .btn-main:hover::after { transform: translateX(100%); }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
+
+    .btn-ghost {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+      font-size: 1rem;
+      padding: 1rem 2.5rem;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      transform: translateY(-2px);
     }
 
-    .price-tag {
-      display: inline-block;
-      padding: 0.6rem 1.5rem;
-      background: linear-gradient(135deg, rgba(255, 51, 102, 0.2), rgba(51, 102, 255, 0.2));
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 1.1rem;
+    /* TICKER */
+    .ticker-wrap {
+      width: 100vw;
+      margin-left: calc(-50vw + 50%);
+      overflow: hidden;
+      background: var(--accent);
+      padding: 0.6rem 0;
+      margin-top: 5rem;
+    }
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker 18s linear infinite;
+    }
+    .ticker-item {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 3px;
+      font-size: 0.95rem;
+      padding: 0 2rem;
       color: #fff;
     }
+    .ticker-item::after { content: '★'; margin-left: 2rem; opacity: 0.6; }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
 
-    /* ========== PORTFOLIO PAGE ========== */
-    .portfolio-grid {
+    /* STATS STRIP */
+    .stats-strip {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .portfolio-item {
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin: 4rem 0;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: all 0.3s ease;
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    }
+    .stat-box {
+      background: var(--surface);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .stat-box:hover::before { opacity: 0.08; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      letter-spacing: 2px;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.5rem;
     }
 
-    .portfolio-item:hover {
-      transform: translateY(-8px);
-      border-color: rgba(255, 51, 102, 0.3);
-      box-shadow: 0 25px 40px -20px #ff3366;
+    /* FEATURE CARDS */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::before { content: ''; display:block; width:24px; height:1px; background:var(--accent2); }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem,5vw,4.5rem);
+      letter-spacing: 2px;
+      line-height: 1.05;
+      margin-bottom: 3rem;
+    }
+    .section-title span {
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .portfolio-image {
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.4s;
+      cursor: pointer;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
       width: 100%;
-      height: 250px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(.23,1,.32,1);
+    }
+    .feature-card:hover { background: rgba(20,20,30,0.95); }
+    .feature-card:hover::after { transform: scaleX(1); }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      display: block;
+      filter: drop-shadow(0 0 12px var(--accent));
+    }
+    .feature-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .feature-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+    .feature-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ══════════════════════════
+       PORTFOLIO PAGE
+    ══════════════════════════ */
+    .portfolio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .portfolio-masonry {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .port-item {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4/5;
+      cursor: pointer;
+    }
+    .port-item.large { aspect-ratio: 4/3; }
+
+    .port-item img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.5s ease;
+      transition: transform 0.7s cubic-bezier(.23,1,.32,1), filter 0.5s;
+      filter: brightness(0.7) saturate(0.8);
+    }
+    .port-item:hover img {
+      transform: scale(1.08);
+      filter: brightness(0.5) saturate(0.5);
     }
 
-    .portfolio-item:hover .portfolio-image {
-      transform: scale(1.05);
+    .port-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      background: linear-gradient(to top, rgba(5,5,7,0.9) 0%, transparent 60%);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(.23,1,.32,1);
+    }
+    .port-item:hover .port-overlay { opacity:1; transform: translateY(0); }
+
+    .port-always {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(5,5,7,0.8) 0%, transparent 100%);
     }
 
-    .portfolio-content {
-      padding: 1.8rem;
-    }
-
-    .portfolio-category {
-      color: #ff3366;
-      font-size: 0.8rem;
+    .port-cat {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.5rem;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+    .port-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .port-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      line-height: 1.5;
     }
 
-    .portfolio-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .portfolio-desc {
-      color: rgba(255, 255, 255, 0.6);
-      line-height: 1.6;
-      font-size: 0.9rem;
-    }
-
-    /* ========== ABOUT PAGE - VERGRÖSSERT ========== */
-    .about-content {
+    /* ══════════════════════════
+       ABOUT PAGE
+    ══════════════════════════ */
+    .about-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2rem;
       margin-top: 2rem;
     }
 
-    .about-text {
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
-      padding: 2.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    .about-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3rem;
     }
-
-    .about-text h2 {
+    .about-block h2 {
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 2rem;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #ff3366, #33ff66);
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-
-    .about-text p {
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.7;
       margin-bottom: 1.5rem;
-      font-size: 1rem;
+    }
+    .about-block p {
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+      font-size: 0.95rem;
     }
 
-    .team-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
+    .printers {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
     }
+    .printer-line {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 1.2rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent2);
+      transition: border-color 0.3s;
+    }
+    .printer-line:hover { border-color: var(--accent2); }
+    .printer-line::before { content: '▶'; color: var(--accent); font-size: 0.6rem; }
 
-    .team-member {
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 40px;
-      padding: 3.5rem 2.5rem;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: all 0.3s ease;
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+    .tbadge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--muted);
+      transition: all 0.3s;
+    }
+    .tbadge:hover { border-color: var(--accent); color: var(--accent); }
+
+    .founder-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      text-align: center;
+      padding: 3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    .founder-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
     }
 
-    .team-member:hover {
-      transform: translateY(-5px);
-      border-color: rgba(255, 51, 102, 0.3);
-      box-shadow: 0 25px 40px -20px #ff3366;
+    .founder-img-wrap {
+      position: relative;
+      margin-bottom: 2rem;
     }
-
-    .member-avatar {
-      width: 200px;
-      height: 200px;
+    .founder-img {
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       object-fit: cover;
-      margin: 0 auto 2rem;
+      border: 2px solid var(--accent);
+      filter: saturate(0.9);
       display: block;
-      border: 4px solid #ff3366;
-      box-shadow: 0 0 20px rgba(255, 51, 102, 0.3);
+    }
+    .founder-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,45,85,0.3);
+      animation: pulse-ring 2.5s ease-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%   { transform: scale(1); opacity:0.6; }
+      100% { transform: scale(1.2); opacity:0; }
     }
 
-    .member-name {
-      font-size: 2.2rem;
+    .founder-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 3px;
+    }
+    .founder-role {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    /* ══════════════════════════
+       CONTACT PAGE
+    ══════════════════════════ */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .info-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2rem;
+    }
+    .info-box-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.7rem;
+    }
+    .info-box-val {
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .info-box-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
     }
 
-    .member-role {
-      color: #ff3366;
-      font-size: 1.3rem;
+    .contact-form-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3rem;
     }
 
-    .tech-stack {
-      margin-top: 2rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      justify-content: center;
-    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-    .tech-badge {
-      padding: 0.6rem 1.2rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 50px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .tech-badge:hover {
-      border-color: #ff3366;
-      transform: scale(1.05);
-    }
-
-    /* ========== CONTACT PAGE ========== */
-    .contact-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 2rem;
-    }
-
-    .contact-form-container {
-      max-width: 800px;
-      width: 100%;
-    }
-
-    .form-group {
+    .fg {
       margin-bottom: 1.5rem;
     }
-
-    .form-group label {
+    .fg label {
       display: block;
-      margin-bottom: 0.5rem;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.95rem;
-      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
     }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
+    .fg input, .fg textarea, .fg select {
       width: 100%;
-      padding: 1rem 1.2rem;
-      background: rgba(20, 20, 30, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
+      padding: 0.9rem 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      transition: border-color 0.3s, background 0.3s;
+      appearance: none;
     }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
+    .fg input:focus, .fg textarea:focus, .fg select:focus {
       outline: none;
-      border-color: #ff3366;
-      background: rgba(30, 30, 40, 0.8);
+      border-color: var(--accent);
+      background: rgba(255,45,85,0.04);
     }
+    .fg textarea { height: 130px; resize: vertical; }
+    .fg select option { background: #0a0a0f; }
 
-    .form-group textarea {
-      height: 150px;
-      resize: vertical;
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .checkbox-row input[type=checkbox] {
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .checkbox-row label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: pointer;
     }
 
     .submit-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 3px;
+      font-size: 1.1rem;
       width: 100%;
-      padding: 1rem;
-      background: linear-gradient(135deg, #ff3366, #ff33cc);
+      padding: 1.1rem;
+      background: var(--accent);
       color: #fff;
       border: none;
-      border-radius: 50px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 3px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 20px -5px rgba(255, 51, 102, 0.3);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
     }
-
-    .submit-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px -5px rgba(255, 51, 102, 0.4);
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
     }
+    .submit-btn:hover::after { transform: translateX(100%); }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
 
-    .form-group.checkbox {
+    /* ══════════════════════════
+       IMPRESSUM
+    ══════════════════════════ */
+    .impressum-box {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3rem;
+    }
+    .impressum-box h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin: 2rem 0 0.8rem;
+    }
+    .impressum-box h2:first-child { margin-top: 0; }
+    .impressum-box p { color: var(--muted); line-height: 1.8; font-size: 0.95rem; }
+    .impressum-box a { color: var(--accent); text-decoration: none; }
+    .impressum-box a:hover { text-decoration: underline; }
+
+    /* ── PAGE TITLES ── */
+    .pg-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 20px 0;
     }
+    .pg-eyebrow::before { content:''; display:block; width:24px; height:1px; background:var(--accent); }
 
-    .form-group.checkbox input {
-      width: auto;
-      margin: 0;
+    .pg-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem,7vw,6rem);
+      letter-spacing: 2px;
+      line-height: 1;
+      margin-bottom: 1rem;
     }
-
-    .form-group.checkbox label {
-      margin: 0;
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* ========== IMPRESSUM PAGE ========== */
-    .impressum-content {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 3rem;
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.5);
-    }
-
-    .impressum-content h2 {
-      font-size: 1.8rem;
-      background: linear-gradient(135deg, #ff3366, #3366ff);
+    .pg-title span {
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin: 2rem 0 1rem 0;
     }
-
-    .impressum-content h2:first-of-type {
-      margin-top: 0;
-    }
-
-    .impressum-content p {
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.7;
-      margin-bottom: 1rem;
+    .pg-sub {
+      color: var(--muted);
       font-size: 1rem;
+      max-width: 500px;
+      line-height: 1.7;
+      margin-bottom: 0;
     }
 
-    .impressum-content a {
-      color: #ff3366;
-      text-decoration: none;
-    }
-
-    .impressum-content a:hover {
-      text-decoration: underline;
-    }
-
-    /* Footer */
+    /* ── FOOTER ── */
     footer {
-      margin-top: 5rem;
-      padding: 2rem 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: 8rem;
+      padding: 2.5rem 0 2rem;
+      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.9rem;
-    }
-
-    .social-links {
-      display: flex;
+      flex-wrap: wrap;
       gap: 1.5rem;
     }
-
-    .social-links a {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 1.5rem;
-      transition: all 0.3s ease;
+    .footer-left {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .footer-mid {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .footer-right {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .footer-right a {
+      color: var(--muted);
       text-decoration: none;
+      font-size: 1.2rem;
+      transition: color 0.3s, transform 0.3s;
       cursor: pointer;
     }
-
-    .social-links a:hover {
-      color: #ff3366;
-      transform: translateY(-3px);
+    .footer-right a:hover { color: var(--accent); transform: translateY(-3px); }
+    .footer-imp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.3s;
     }
+    .footer-imp:hover { color: var(--accent); }
 
-    /* Loading Animation */
-    .loading {
+    /* ── LOADING ── */
+    #loading {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #0a0a0a;
+      inset: 0;
+      background: var(--bg);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 10000;
-      transition: opacity 0.5s ease;
+      z-index: 99999;
+      transition: opacity 0.6s ease;
+    }
+    .load-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+    }
+    .load-bar-wrap {
+      width: 200px;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .load-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 2px;
+      animation: loadProg 1.2s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    @keyframes loadProg {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+    .load-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-top: 0.8rem;
     }
 
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 2px solid rgba(255, 51, 102, 0.2);
-      border-radius: 50%;
-      border-top-color: #ff3366;
-      animation: spin 0.8s linear infinite;
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s cubic-bezier(.23,1,.32,1), transform 0.7s cubic-bezier(.23,1,.32,1);
     }
+    .reveal.in { opacity:1; transform:translateY(0); }
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* ========== VERBESSERTE HANDY-SKALIERUNG ========== */
+    /* ── MOBILE ── */
     @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
+      body { cursor: auto; }
+      #cursor-dot, #cursor-ring { display: none; }
 
-      nav {
-        padding: 0.6rem 1rem;
-        border-radius: 50px;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
+      .container { padding: 1rem; }
+      nav { padding: 0.8rem 1rem; flex-wrap: wrap; justify-content: center; gap: 0.5rem; border-radius: 4px; top: 0.5rem; }
+      .logo { font-size: 1.5rem; margin-right: auto; }
+      .nav-links { gap: 1.2rem; }
+      .nav-links a { font-size: 0.7rem; }
 
-      .logo {
-        font-size: 1.3rem;
-        margin-right: auto;
-      }
+      .hero { min-height: 70vh; padding: 2rem 0 1rem; }
+      .hero-title { font-size: clamp(3rem, 12vw, 5rem); }
+      .hero-sub { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; }
+      .btn-main, .btn-ghost { width: 100%; text-align: center; }
 
-      .nav-links {
-        display: flex;
-        gap: 0.8rem;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
+      .ticker-wrap { margin-top: 2rem; }
 
-      .nav-links a {
-        font-size: 0.85rem;
-        padding: 0.3rem 0;
-        white-space: nowrap;
-      }
+      .stats-strip { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
 
-      .animated-headline {
-        font-size: 2.5rem;
-      }
+      .portfolio-masonry { grid-template-columns: 1fr 1fr; }
 
-      .subtitle {
-        font-size: 1rem;
-        padding: 0 0.5rem;
-        margin-bottom: 2rem;
-      }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-block { padding: 2rem; }
+      .founder-card { padding: 2rem; }
 
-      .cta-buttons {
-        flex-direction: column;
-        gap: 1rem;
-        width: 100%;
-        padding: 0 1rem;
-      }
+      .contact-layout { grid-template-columns: 1fr; }
+      .contact-form-box { padding: 2rem; }
+      .form-row { grid-template-columns: 1fr; }
 
-      .btn {
-        width: 100%;
-        text-align: center;
-      }
+      .impressum-box { padding: 2rem; }
 
-      .stats {
-        flex-direction: column;
-        gap: 1rem;
-        margin: 3rem 0 2rem;
-      }
-
-      .stat-item {
-        padding: 1.5rem;
-        min-width: unset;
-        width: 100%;
-      }
-
-      .stat-number {
-        font-size: 2rem;
-      }
-
-      .services-preview {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .portfolio-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .about-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-
-      .about-text {
-        padding: 1.8rem;
-      }
-
-      .about-text h2 {
-        font-size: 1.6rem;
-      }
-
-      .team-member {
-        padding: 2.5rem 1.5rem;
-      }
-
-      .member-avatar {
-        width: 150px;
-        height: 150px;
-        margin-bottom: 1.5rem;
-      }
-
-      .member-name {
-        font-size: 1.8rem;
-      }
-
-      .member-role {
-        font-size: 1.1rem;
-      }
-
-      .page-title {
-        font-size: 2.2rem;
-      }
-
-      .page-subtitle {
-        font-size: 1rem;
-        margin-bottom: 2rem;
-        padding: 0 1rem;
-      }
-
-      .contact-form-container {
-        padding: 0 0.5rem;
-      }
-
-      .form-group input,
-      .form-group textarea,
-      .form-group select {
-        padding: 0.9rem 1rem;
-      }
-
-      .form-group.checkbox {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-      }
-
-      .impressum-content {
-        padding: 1.8rem;
-      }
-
-      .impressum-content h2 {
-        font-size: 1.5rem;
-      }
-
-      footer {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-        padding: 1.5rem 0;
-      }
-
-      .social-links {
-        justify-content: center;
-      }
+      footer { flex-direction: column; text-align: center; }
+      footer .footer-right { justify-content: center; }
     }
 
-    /* Für sehr kleine Handys */
     @media (max-width: 480px) {
-      .animated-headline {
-        font-size: 2rem;
-      }
-
-      .btn-primary-services {
-        width: 90%;
-      }
-
-      .member-avatar {
-        width: 120px;
-        height: 120px;
-      }
-
-      .member-name {
-        font-size: 1.5rem;
-      }
-
-      .member-role {
-        font-size: 1rem;
-      }
+      .portfolio-masonry { grid-template-columns: 1fr; }
+      .pg-title { font-size: 3rem; }
     }
 
-    /* Tablets */
-    @media (min-width: 769px) and (max-width: 1024px) {
-      .services-preview {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    /* ── GLITCH EFFECT on logo ── */
+    @keyframes glitch {
+      0%   { clip-path: inset(40% 0 61% 0); transform: translate(-2px,0) skew(0.5deg); }
+      20%  { clip-path: inset(92% 0 1% 0);  transform: translate(2px,0) skew(-0.5deg); }
+      40%  { clip-path: inset(43% 0 1% 0);  transform: translate(-2px,0) skew(0.5deg); }
+      60%  { clip-path: inset(25% 0 58% 0); transform: translate(2px,0) skew(-0.5deg); }
+      80%  { clip-path: inset(54% 0 7% 0);  transform: translate(-2px,0) skew(0.5deg); }
+      100% { clip-path: inset(58% 0 43% 0); transform: translate(2px,0) skew(-0.5deg); }
+    }
+    .logo-glitch { position: relative; }
+    .logo-glitch::before, .logo-glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: inherit;
+      letter-spacing: inherit;
+    }
+    .logo-glitch::before {
+      left: 2px;
+      text-shadow: -2px 0 var(--accent2);
+      animation: glitch 2s infinite linear alternate-reverse;
+      opacity: 0;
+    }
+    .logo-glitch::after {
+      left: -2px;
+      text-shadow: 2px 0 var(--accent);
+      animation: glitch 3s infinite linear alternate;
+      opacity: 0;
+    }
+    .logo-glitch:hover::before,
+    .logo-glitch:hover::after { opacity: 0.8; }
 
-      .portfolio-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .about-content {
-        gap: 1.5rem;
-      }
-
-      .animated-headline {
-        font-size: 4rem;
-      }
+    /* ── PAGE divider ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin: 4rem 0;
     }
   </style>
 </head>
-
 <body>
-  <!-- Loading Animation -->
-  <div class="loading" id="loading">
-    <div class="loader"></div>
-  </div>
 
-  <!-- Floating Background Shapes -->
-  <div class="floating-shape shape-1"></div>
-  <div class="floating-shape shape-2"></div>
-  <div class="floating-shape shape-3"></div>
+<!-- Custom Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
 
-  <!-- Main Container -->
-  <div class="container">
-    <!-- Navigation -->
-    <nav>
-      <div class="logo" onclick="switchPage('home')">KlamsiPrints</div>
-      <div class="nav-links">
-        <a class="active" onclick="switchPage('home')" id="nav-home">Home</a>
-        <!--<a onclick="switchPage('services')" id="nav-services">Services</a> -->
-        <a onclick="switchPage('portfolio')" id="nav-portfolio">Portfolio</a>
-        <a onclick="switchPage('about')" id="nav-about">Über uns</a>
-        <a onclick="switchPage('contact')" id="nav-contact">Kontakt</a>
-      </div>
-    </nav>
+<!-- Particle Canvas -->
+<canvas id="bg-canvas"></canvas>
 
-    <!-- HOME PAGE -->
-    <div id="home-page" class="page active-page">
-      <div class="main-content">
-        <h1 class="animated-headline">
-          <span class="static-text">Idee wird Realität</span><br>
-          <span class="gradient-text">KlamsiPrints</span>
-        </h1>
+<!-- Loading Screen -->
+<div id="loading">
+  <div class="load-logo">KLAMSIPRINTS</div>
+  <div class="load-bar-wrap"><div class="load-bar"></div></div>
+  <div class="load-pct" id="load-pct">0%</div>
+</div>
 
-        <p class="subtitle">
-          Verwandeln Sie Ihre Ideen in greifbare Realität. Mit modernster 3D Druck Technologie
-          und kreativem Design realisieren wir Ihre Projekte.
-        </p>
-
-        <div class="cta-buttons">
-          <button class="btn btn-primary" onclick="switchPage('contact')">Jetzt Projekt starten</button>
-          <button class="btn btn-secondary" onclick="switchPage('portfolio')">Portfolio ansehen</button>
-        </div>
-
-        <div class="stats">
-          <div class="stat-item">
-            <div class="stat-number">50+</div>
-            <div class="stat-label">Erfolgreiche Projekte</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">24h</div>
-            <div class="stat-label">Kontaktierbar</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">99,8%</div>
-            <div class="stat-label">Kundenzufriedenheit</div>
-          </div>
-        </div>
-
-        <div class="services-preview">
-          <div class="service-card" onclick="switchPage('contact')">
-            <h3 class="service-title">Individuelles Design</h3>
-            <p class="service-desc">Von der Idee bis zum fertigen 3D-Modell - wir designen Ihre Vision.</p>
-          </div>
-          <div class="service-card" onclick="switchPage('contact')">
-            <h3 class="service-title">Schnelle Produktion</h3>
-            <p class="service-desc">Modernste Drucker für schnelle und präzise Ergebnisse.</p>
-          </div>
-          <div class="service-card" onclick="switchPage('contact')">
-            <h3 class="service-title">Hochwertiges Material</h3>
-            <p class="service-desc">Wir drucken mit PLA - dem weit verbreitetsten Filament der Welt.</p>
-          </div>
-        </div>
-      </div>
+<div class="container">
+  <!-- NAV -->
+  <nav>
+    <div class="logo logo-glitch" data-text="KlamsiPrints" onclick="switchPage('home')">KlamsiPrints</div>
+    <div class="nav-links">
+      <a class="active" onclick="switchPage('home')" id="nav-home">Home</a>
+      <a onclick="switchPage('portfolio')" id="nav-portfolio">Portfolio</a>
+      <a onclick="switchPage('about')" id="nav-about">Über uns</a>
+      <a onclick="switchPage('contact')" id="nav-contact">Kontakt</a>
     </div>
+  </nav>
 
-    <!-- SERVICES PAGE
-    <div id="services-page" class="page">
-      <h1 class="page-title">Unsere <span class="gradient-text">Services</span></h1>
-      <p class="page-subtitle">Maßgeschneiderte 3D Druck Lösungen für jede Anforderung</p>
+  <!-- ─── HOME ─── -->
+  <div id="home-page" class="page active-page">
 
-      <div class="services-grid">
-        <div class="service-detail-card">
-          <h2 class="service-detail-title">3D Design & Modellierung</h2>
-          <p class="service-detail-desc">Wir erstellen präzise 3D-Modelle nach Ihren Vorstellungen oder optimieren
-            bestehende Designs für den 3D Druck.</p>
-          <ul class="service-features">
-            <li>CAD-Modellierung</li>
-            <li>Design-Optimierung</li>
-          </ul>
-          <div class="price-tag">ab 19€</div>
-        </div>
-
-        <div class="service-detail-card">
-          <h2 class="service-detail-title">Druck ihrer eigenen Datei</h2>
-          <p class="service-detail-desc">Wir drucken ihre eigene STL-Datei und versenden sie zu Ihnen.
-          </p>
-          <ul class="service-features">
-            <li>Hohe Genauigkeit</li>
-            <li>Große Bauteile bis 256x256x256mm</li>
-          </ul>
-          <div class="price-tag">ab 10€</div>
-        </div>
-      </div>
-
-      <button class="btn-primary-services" onclick="switchPage('contact')">Jetzt Anfragen</button>
-    </div>-->
-
-    <!-- PORTFOLIO PAGE -->
-    <div id="portfolio-page" class="page">
-      <h1 class="page-title">Unser <span class="gradient-text">Portfolio</span></h1>
-      <p class="page-subtitle">Eine Auswahl unserer besten Projekte</p>
-
-      <div class="portfolio-grid">
-        <div class="portfolio-item">
-          <img src="img/besteMAMA.jpg" alt="BesteMamaDruck" class="portfolio-image">
-          <div class="portfolio-content">
-            <div class="portfolio-category">Geschenke</div>
-            <h3 class="portfolio-title">Angepasste Geschenke</h3>
-            <p class="portfolio-desc">Ein 3D-gedrucktes Schild eignet sich als das perfekte Geschenk!</p>
-          </div>
-        </div>
-
-        <div class="portfolio-item">
-          <img src="img/sternenkueche.jpg" alt="SternekücheDruck" class="portfolio-image">
-          <div class="portfolio-content">
-            <div class="portfolio-category">Dekoration</div>
-            <h3 class="portfolio-title">Schöne Dekoration</h3>
-            <p class="portfolio-desc">Aufsteller welche Ihr Zuhause verschönern.</p>
-          </div>
-        </div>
-
-        <div class="portfolio-item">
-          <img src="img/IMG_4792.jpg" alt="Spielverbesserungen" class="portfolio-image">
-          <div class="portfolio-content">
-            <div class="portfolio-category">Spielverbesserungen</div>
-            <h3 class="portfolio-title">Brettspiel-Erweiterungen</h3>
-            <p class="portfolio-desc">Maßgefertigte Erweiterungen und Erleichterungen.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABOUT PAGE - VERGRÖSSERT -->
-    <div id="about-page" class="page">
-      <h1 class="page-title">Über <span class="gradient-text">KlamsiPrints</span></h1>
-      <p class="page-subtitle">Leidenschaft für 3D Druck seit 04.2025</p>
-
-      <div class="about-content">
-        <div class="about-text">
-          <h2>Unsere Geschichte</h2>
-          <p>KlamsiPrints wurde aus der Leidenschaft für moderne Fertigungstechnologien geboren.</p>
-          <p>Wir glauben daran, dass jeder eine Idee hat, die es wert ist, verwirklicht zu werden. Mit unserer
-            Einschätzung und Begeisterung für 3D Druck helfen wir Ihnen, Ihre Visionen in die reale Welt zu bringen.</p>
-          <h2>Unsere Philosophie</h2>
-          <p>Qualität, Präzision und Kundenzufriedenheit steht bei uns an erster Stelle. Wir beraten Sie umfassend,
-            finden die beste Lösung für Ihr Projekt und produzieren mit höchster Sorgfalt.</p>
-          <div class="tech-stack">
-            <span class="tech-badge">PLA Druck</span>
-            <span class="tech-badge">CAD Design</span>
-            <span class="tech-badge">3D Objekte</span>
-          </div>
-          <h2>Unsere Drucker</h2>
-          <p>- Bambu Lab P2S</p>
-          <p>- Bambu Lab A1</p>
-        </div>
-
-        <div class="team-grid">
-          <div class="team-member">
-            <img src="img/luca.jpg" alt="Gründer" class="member-avatar">
-            <h3 class="member-name">Luca Klaminger</h3>
-            <div class="member-role">Gründer & 3D-Experte</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONTACT PAGE -->
-    <div id="contact-page" class="page">
-      <h1 class="page-title">Kontakt <span class="gradient-text">& Anfrage</span></h1>
-      <p class="page-subtitle" style="margin-bottom: 0.5rem;">Lassen Sie uns Ihr Projekt besprechen</p>
-
-      <p
-        style="text-align: center; color: #ff3366; margin-bottom: 2rem; font-size: 1rem; font-weight: 500; letter-spacing: 0.5px;">
-        ⚡ Rückantwort erfolgt innerhalb von 24h per E-Mail
+    <div class="hero">
+      <div class="hero-eyebrow reveal">3D Druck Service · Weiz, Österreich</div>
+      <h1 class="hero-title reveal">
+        <span class="line-1">Idee wird</span>
+        <span class="line-2">Realität</span>
+      </h1>
+      <p class="hero-sub reveal">
+        Verwandeln Sie Ihre Ideen in greifbare Objekte. Mit modernster 3D-Drucktechnologie und 
+        persönlichem Design realisieren wir jedes Projekt – präzise, schnell, einzigartig.
       </p>
+      <div class="hero-cta reveal">
+        <button class="btn-main" onclick="switchPage('contact')">Projekt starten →</button>
+        <button class="btn-ghost" onclick="switchPage('portfolio')">Portfolio ansehen</button>
+      </div>
+    </div>
 
-      <div class="contact-container">
-        <div class="contact-form-container">
-          <form action="https://formspree.io/f/xgvkjzvr" method="POST">
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span class="ticker-item">3D DRUCK</span>
+        <span class="ticker-item">INDIVIDUELLES DESIGN</span>
+        <span class="ticker-item">PLA FILAMENT</span>
+        <span class="ticker-item">SCHNELLE LIEFERUNG</span>
+        <span class="ticker-item">BAMBU LAB QUALITÄT</span>
+        <span class="ticker-item">WEIZ ÖSTERREICH</span>
+        <span class="ticker-item">KLAMSIPRINTS</span>
+        <span class="ticker-item">3D DRUCK</span>
+        <span class="ticker-item">INDIVIDUELLES DESIGN</span>
+        <span class="ticker-item">PLA FILAMENT</span>
+        <span class="ticker-item">SCHNELLE LIEFERUNG</span>
+        <span class="ticker-item">BAMBU LAB QUALITÄT</span>
+        <span class="ticker-item">WEIZ ÖSTERREICH</span>
+        <span class="ticker-item">KLAMSIPRINTS</span>
+      </div>
+    </div>
 
-            <div class="form-group">
-              <label for="name">Name *</label>
-              <input type="text" id="name" name="name" placeholder="Ihr vollständiger Name" required>
-            </div>
+    <!-- STATS -->
+    <div class="stats-strip reveal" style="margin-top:4rem;">
+      <div class="stat-box">
+        <div class="stat-num" data-count="50">0</div>
+        <div class="stat-lbl">Erfolgreiche Projekte</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">24h</div>
+        <div class="stat-lbl">Reaktionszeit</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">99%</div>
+        <div class="stat-lbl">Kundenzufriedenheit</div>
+      </div>
+    </div>
 
-            <div class="form-group">
-              <label for="email">Email *</label>
-              <input type="email" id="email" name="email" placeholder="ihre@email.de" required>
-            </div>
+    <!-- FEATURES -->
+    <div style="margin-top:6rem;">
+      <div class="section-label reveal">Was wir bieten</div>
+      <h2 class="section-title reveal">Services &<br><span>Stärken</span></h2>
 
-            <div class="form-group">
-              <label for="service">Gewünschter Service</label>
-              <select id="service" name="service">
-                <option value="3D Design">3D-Druckauftrag</option>
-                <option value="Beratung">Beratung</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="message">Nachricht *</label>
-              <textarea id="message" name="message" placeholder="Beschreiben Sie Ihr Projekt..." required></textarea>
-            </div>
-
-            <div class="form-group checkbox">
-              <input type="checkbox" id="consent" name="consent" required>
-              <label for="consent">Ich stimme der Speicherung meiner Daten zu *</label>
-            </div>
-
-            <button type="submit" class="submit-btn">Anfrage senden</button>
-          </form>
+      <div class="features-grid reveal">
+        <div class="feature-card" onclick="switchPage('contact')">
+          <span class="feature-icon">⬡</span>
+          <div class="feature-num">01</div>
+          <h3 class="feature-title">Individuelles Design</h3>
+          <p class="feature-desc">Von der Skizze bis zum fertigen 3D-Modell. Wir designen Ihre Idee und machen sie druckbereit.</p>
+        </div>
+        <div class="feature-card" onclick="switchPage('contact')">
+          <span class="feature-icon">⚡</span>
+          <div class="feature-num">02</div>
+          <h3 class="feature-title">Schnelle Produktion</h3>
+          <p class="feature-desc">Bambu Lab Drucker für höchste Präzision und kurze Lieferzeiten. Ihr Objekt kommt schnell an.</p>
+        </div>
+        <div class="feature-card" onclick="switchPage('contact')">
+          <span class="feature-icon">◈</span>
+          <div class="feature-num">03</div>
+          <h3 class="feature-title">Premium PLA Material</h3>
+          <p class="feature-desc">Druck mit hochwertigem PLA – dem weltweit meistverwendeten Filament für langlebige Ergebnisse.</p>
         </div>
       </div>
     </div>
 
-    <!-- IMPRESSUM PAGE -->
-    <div id="impressum-page" class="page">
-      <h1 class="page-title">Impressum</h1>
-      <p class="page-subtitle">Rechtliche Angaben</p>
+    <!-- CTA BANNER -->
+    <div style="margin-top:6rem; padding:4rem 3rem; background:var(--surface); border:1px solid var(--border); border-radius:4px; position:relative; overflow:hidden; text-align:center;" class="reveal">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%, rgba(255,45,85,0.12) 0%, transparent 70%);pointer-events:none;"></div>
+      <div class="section-label" style="justify-content:center; margin-bottom:1.5rem;">Bereit loszulegen?</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);letter-spacing:3px;margin-bottom:1.5rem;">Ihr Projekt wartet</h2>
+      <p style="color:var(--muted);margin-bottom:2.5rem;max-width:450px;margin-left:auto;margin-right:auto;font-size:0.95rem;line-height:1.7;">Kontaktieren Sie uns jetzt. Innerhalb von 24 Stunden erhalten Sie eine persönliche Rückmeldung und ein individuelles Angebot.</p>
+      <button class="btn-main" onclick="switchPage('contact')">Jetzt anfragen →</button>
+    </div>
 
-      <div class="impressum-content">
-        <h2>Angaben gemäß § 5 TMG</h2>
-        <p>
-          Luca Klaminger<br>
-          KlamsiPrints<br>
-          Schillerstraße 13<br>
-          8160 Weiz<br>
-          Österreich
-        </p>
+  </div>
 
-        <h2>Kontakt</h2>
-        <p>
-          E-Mail: klamsiprints@gmail.com
-        </p>
+  <!-- ─── PORTFOLIO ─── -->
+  <div id="portfolio-page" class="page">
+    <div class="pg-eyebrow">Unsere Arbeiten</div>
+    <h1 class="pg-title">Portfolio<br><span>Projekte</span></h1>
+    <p class="pg-sub" style="margin-bottom:3rem;">Ausgewählte Arbeiten – von personalisierten Geschenken bis hin zu Dekorationsobjekten und Spielerweiterungen.</p>
 
-        <h2>Verantwortlich für den Inhalt</h2>
-        <p>
-          Luca Klaminger
-        </p>
+    <div class="portfolio-masonry">
+      <div class="port-item">
+        <img src="img/besteMAMA.jpg" alt="BesteMama">
+        <div class="port-always">
+          <div class="port-cat">Geschenke</div>
+          <div class="port-name">Personalisierte Schilder</div>
+        </div>
+        <div class="port-overlay">
+          <div class="port-cat">Geschenke</div>
+          <div class="port-name">Personalisierte Schilder</div>
+          <p class="port-desc">3D-gedruckte Schilder als perfektes individuelles Geschenk für jeden Anlass.</p>
+        </div>
+      </div>
+
+      <div class="port-item">
+        <img src="img/sternenkueche.jpg" alt="Sternenküche">
+        <div class="port-always">
+          <div class="port-cat">Dekoration</div>
+          <div class="port-name">Wohndekor</div>
+        </div>
+        <div class="port-overlay">
+          <div class="port-cat">Dekoration</div>
+          <div class="port-name">Wohndekor Aufsteller</div>
+          <p class="port-desc">Elegante Aufsteller, die Ihr Zuhause mit einem modernen Touch verschönern.</p>
+        </div>
+      </div>
+
+      <div class="port-item">
+        <img src="img/IMG_4792.jpg" alt="Spielverbesserungen">
+        <div class="port-always">
+          <div class="port-cat">Gaming</div>
+          <div class="port-name">Brettspiel-Extras</div>
+        </div>
+        <div class="port-overlay">
+          <div class="port-cat">Gaming</div>
+          <div class="port-name">Brettspiel-Erweiterungen</div>
+          <p class="port-desc">Maßgefertigte Organizer, Token und Erweiterungen für Ihr Lieblingsspiel.</p>
+        </div>
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-      <div>&copy; 2026 KlamsiPrints. Alle Rechte vorbehalten.</div>
-      <div style="display: flex; gap: 0.5rem;">
-        <a onclick="switchPage('impressum')"
-          style="color: #ff3366; text-decoration: none; cursor: pointer;">Impressum</a>
-      </div>
-      <div class="social-links">
-        <a href="https://www.instagram.com/klamsimedia/" target="_blank"><i class="fab fa-instagram"></i></a>
-        <a onclick="switchPage('contact')"><i class="fas fa-envelope"></i></a>
-      </div>
-    </footer>
+    <div style="margin-top:4rem; text-align:center;" class="reveal">
+      <p style="color:var(--muted); font-size:0.9rem; font-family:'JetBrains Mono',monospace; letter-spacing:2px; text-transform:uppercase; margin-bottom:1.5rem;">Ihr Projekt dabei?</p>
+      <button class="btn-main" onclick="switchPage('contact')">Jetzt anfragen →</button>
+    </div>
   </div>
 
-  <script>
-    // Loading Animation
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        document.getElementById('loading').style.opacity = '0';
-        setTimeout(function () {
-          document.getElementById('loading').style.display = 'none';
-        }, 500);
-      }, 1000);
-    });
+  <!-- ─── ABOUT ─── -->
+  <div id="about-page" class="page">
+    <div class="pg-eyebrow">Wer wir sind</div>
+    <h1 class="pg-title">Über<br><span>KlamsiPrints</span></h1>
+    <p class="pg-sub" style="margin-bottom:3rem;">Leidenschaft für 3D-Druck seit April 2025.</p>
 
-    // Page Switching Function
-    function switchPage(pageName) {
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active-page');
-      });
-      document.getElementById(pageName + '-page').classList.add('active-page');
+    <div class="about-grid">
+      <div>
+        <div class="about-block reveal">
+          <h2>Unsere Geschichte</h2>
+          <p>KlamsiPrints entstand aus echter Begeisterung für moderne Fertigungstechnologien. Was als Hobby begann, entwickelte sich schnell zu einem professionellen Service.</p>
+          <p>Wir glauben: Jede Idee verdient es, verwirklicht zu werden. Mit Know-how und Leidenschaft für 3D-Druck helfen wir Ihnen, Visionen greifbar zu machen.</p>
+          <h2 style="margin-top:2rem;">Unsere Philosophie</h2>
+          <p>Qualität, Präzision und Kundenzufriedenheit sind unsere Priorität. Wir beraten ehrlich, finden die beste Lösung und produzieren mit höchster Sorgfalt.</p>
+          <div class="tech-badges">
+            <span class="tbadge">PLA Druck</span>
+            <span class="tbadge">CAD Design</span>
+            <span class="tbadge">3D Modellierung</span>
+            <span class="tbadge">Bambu Lab</span>
+          </div>
+        </div>
 
-      document.querySelectorAll('.nav-links a').forEach(link => {
-        link.classList.remove('active');
-      });
-      document.getElementById('nav-' + pageName).classList.add('active');
+        <div class="about-block reveal" style="margin-top:1.5rem;">
+          <h2>Unsere Drucker</h2>
+          <div class="printers">
+            <div class="printer-line">Bambu Lab P2S</div>
+            <div class="printer-line">Bambu Lab A1</div>
+          </div>
+        </div>
+      </div>
 
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      <div class="founder-card reveal">
+        <div class="founder-img-wrap">
+          <img src="img/luca.jpg" alt="Luca Klaminger" class="founder-img">
+        </div>
+        <div class="founder-name">Luca Klaminger</div>
+        <div class="founder-role">Gründer & 3D-Experte</div>
+        <div style="width:40px;height:1px;background:var(--border);margin:1.5rem auto;"></div>
+        <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;max-width:300px;">
+          Technikbegeistert, kreativ, und immer auf der Suche nach der besten Lösung für jedes Projekt.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CONTACT ─── -->
+  <div id="contact-page" class="page">
+    <div class="pg-eyebrow">Schreib uns</div>
+    <h1 class="pg-title">Kontakt &<br><span>Anfrage</span></h1>
+
+    <div class="contact-layout">
+      <div class="contact-info reveal">
+        <div class="info-box">
+          <div class="info-box-label">Response Time</div>
+          <div class="info-box-val">&lt; 24 Stunden</div>
+          <div class="info-box-sub">Wir melden uns per E-Mail</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-label">E-Mail</div>
+          <div class="info-box-val">klamsiprints@gmail.com</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-label">Standort</div>
+          <div class="info-box-val">Weiz, Steiermark</div>
+          <div class="info-box-sub">Österreich</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-label">Social</div>
+          <div class="info-box-val">
+            <a href="https://www.instagram.com/klamsimedia/" target="_blank" style="color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:0.5rem;">
+              <i class="fab fa-instagram"></i> @klamsimedia
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form-box reveal">
+        <form action="https://formspree.io/f/xgvkjzvr" method="POST">
+          <div class="form-row">
+            <div class="fg">
+              <label>Name *</label>
+              <input type="text" name="name" placeholder="Ihr vollständiger Name" required>
+            </div>
+            <div class="fg">
+              <label>E-Mail *</label>
+              <input type="email" name="email" placeholder="ihre@email.at" required>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Gewünschter Service</label>
+            <select name="service">
+              <option value="3D-Druckauftrag">3D-Druckauftrag</option>
+              <option value="Beratung">Beratung</option>
+              <option value="Sonstiges">Sonstiges</option>
+            </select>
+          </div>
+
+          <div class="fg">
+            <label>Nachricht *</label>
+            <textarea name="message" placeholder="Beschreiben Sie Ihr Projekt – Material, Größe, Stückzahl, besondere Wünsche..." required></textarea>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="consent" name="consent" required>
+            <label for="consent">Ich stimme der Speicherung meiner Daten zu *</label>
+          </div>
+
+          <button type="submit" class="submit-btn">Anfrage absenden →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── IMPRESSUM ─── -->
+  <div id="impressum-page" class="page">
+    <div class="pg-eyebrow">Rechtliches</div>
+    <h1 class="pg-title"><span>Impressum</span></h1>
+
+    <div class="impressum-box">
+      <h2>Angaben gemäß § 5 TMG</h2>
+      <p>Luca Klaminger<br>KlamsiPrints<br>Schillerstraße 13<br>8160 Weiz<br>Österreich</p>
+      <h2>Kontakt</h2>
+      <p>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
+      <h2>Verantwortlich für den Inhalt</h2>
+      <p>Luca Klaminger</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">© 2026 KlamsiPrints</div>
+    <div class="footer-mid" onclick="switchPage('home')" style="cursor:pointer;">KP</div>
+    <div class="footer-right">
+      <a onclick="switchPage('impressum')" class="footer-imp">Impressum</a>
+      <a href="https://www.instagram.com/klamsimedia/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a onclick="switchPage('contact')"><i class="fas fa-envelope"></i></a>
+    </div>
+  </footer>
+</div>
+
+<script>
+// ── LOADING ──
+let pct = 0;
+const pctEl = document.getElementById('load-pct');
+const iv = setInterval(() => {
+  pct = Math.min(pct + Math.random() * 15, 99);
+  pctEl.textContent = Math.floor(pct) + '%';
+}, 80);
+
+window.addEventListener('load', () => {
+  clearInterval(iv);
+  pctEl.textContent = '100%';
+  setTimeout(() => {
+    const l = document.getElementById('loading');
+    l.style.opacity = '0';
+    setTimeout(() => l.style.display = 'none', 600);
+    initReveal();
+  }, 400);
+});
+
+// ── CURSOR ──
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
+
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+function animCursor() {
+  dot.style.left = mx + 'px';
+  dot.style.top  = my + 'px';
+  rx += (mx - rx) * 0.15;
+  ry += (my - ry) * 0.15;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+document.querySelectorAll('button, a, .feature-card, .port-item, .stat-box').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    ring.style.width = '55px';
+    ring.style.height = '55px';
+    ring.style.borderColor = 'var(--accent)';
+  });
+  el.addEventListener('mouseleave', () => {
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+    ring.style.borderColor = 'var(--accent2)';
+  });
+});
+
+// ── PARTICLE CANVAS ──
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.r = Math.random() * 1.2 + 0.3;
+      this.vx = (Math.random() - 0.5) * 0.4;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.alpha = Math.random() * 0.5 + 0.1;
+      this.color = Math.random() > 0.5 ? '255,45,85' : '0,245,212';
     }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${this.color},${this.alpha})`;
+      ctx.fill();
+    }
+  }
 
-    // Parallax effect for floating shapes
-    document.addEventListener('mousemove', (e) => {
-      const shapes = document.querySelectorAll('.floating-shape');
-      const mouseX = e.clientX / window.innerWidth;
-      const mouseY = e.clientY / window.innerHeight;
+  for (let i = 0; i < 120; i++) particles.push(new Particle());
 
-      shapes.forEach((shape, index) => {
-        const speed = (index + 1) * 20;
-        const x = (mouseX - 0.5) * speed;
-        const y = (mouseY - 0.5) * speed;
-        shape.style.transform = `translate(${x}px, ${y}px) rotate(${x}deg)`;
-      });
-    });
-
-    // Intersection Observer for fade-in animation
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
+  function drawConnections() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i+1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < 100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(255,45,85,${0.04 * (1 - d/100)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
         }
-      });
-    }, observerOptions);
+      }
+    }
+  }
 
-    document.querySelectorAll('.service-card, .stat-item, .service-detail-card, .portfolio-item, .team-member').forEach(element => {
-      element.style.opacity = '0';
-      element.style.transform = 'translateY(20px)';
-      element.style.transition = 'all 0.6s ease';
-      observer.observe(element);
+  function loop() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => { p.update(); p.draw(); });
+    drawConnections();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ── PAGE SWITCHING ──
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+  document.getElementById(name + '-page').classList.add('active-page');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(initReveal, 100);
+}
+
+// ── SCROLL REVEAL ──
+function initReveal() {
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  els.forEach(el => { el.classList.remove('in'); obs.observe(el); });
+
+  // immediate trigger for visible ones
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.95) el.classList.add('in');
     });
-  </script>
-</body>
+  }, 50);
+}
 
+// ── COUNT UP ──
+function countUp() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    let cur = 0;
+    const step = Math.ceil(target / 40);
+    const iv = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = cur + '+';
+      if (cur >= target) clearInterval(iv);
+    }, 30);
+  });
+}
+setTimeout(countUp, 1200);
+</script>
+</body>
 </html>
