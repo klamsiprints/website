@@ -126,99 +126,69 @@
     }
     .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); transform: translateY(-2px); }
 
-    /* ── LOGO SLIDER ── */
+    /* LOGO SLIDER */
     .logo-slider-section {
-      margin-top: 5rem;
-      width: 100vw;
-      margin-left: calc(-50vw + 50%);
-      background: rgba(8,8,12,0.9);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 2.5rem 0;
+      margin-top: 5rem; width: 100vw; margin-left: calc(-50vw + 50%);
+      background: rgba(8,8,12,0.9); border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); padding: 2.5rem 0;
     }
     .logo-slider-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      margin-bottom: 2rem;
-      opacity: 0.5;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      letter-spacing: 4px; text-transform: uppercase; color: var(--muted);
+      text-align: center; margin-bottom: 2rem; opacity: 0.5;
     }
     .logo-slider-track-wrap {
       overflow: hidden;
       mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
       -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
     }
-    .logo-slider-track {
-      display: flex;
-      gap: 0.5rem;
-      width: auto;
-      animation: logoScroll 30s linear infinite;
-    }
+    .logo-slider-track { display: flex; gap: 0.5rem; width: auto; animation: logoScroll 30s linear infinite; }
     .logo-slider-track:hover { animation-play-state: paused; }
     @keyframes logoScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
     .logo-card {
       display: flex; align-items: center; justify-content: center;
-      width: 500px; height: 220px;
-      border-radius: 4px; flex-shrink: 0;
+      width: 500px; height: 220px; border-radius: 4px; flex-shrink: 0;
       transition: border-color 0.3s, opacity 0.3s;
       opacity: 0.8; overflow: hidden; padding: 2px 2px;
     }
     .logo-card:hover { border-color: var(--accent); opacity: 1; }
-    .logo-card img {
-      max-width: 100%; max-height: 100%; object-fit: contain;
-
-      opacity: 1; transition: opacity 0.3s;
-    }
+    .logo-card img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 1; transition: opacity 0.3s; }
     .logo-card:hover img { opacity: 1; }
 
     /* STATS */
     .stats-strip {
-  display: grid; grid-template-columns: repeat(3,1fr);
-  gap: 1.5rem; background: transparent; border: none;
-  margin: 4rem 0; overflow: visible;
-}
-.stat-box {
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 2.5rem 2rem; text-align: center;
-  position: relative; overflow: hidden;
-  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-}
-.stat-box::before {
-  content: ''; position: absolute; inset: 0; border-radius: 20px;
-  background: linear-gradient(135deg, rgba(255,45,85,0.08) 0%, rgba(0,245,212,0.04) 100%);
-  opacity: 0; transition: opacity 0.3s;
-}
-.stat-box::after {
-  content: ''; position: absolute;
-  top: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  border-radius: 50%;
-}
-.stat-box:hover {
-  transform: translateY(-6px);
-  border-color: rgba(255,45,85,0.4);
-  box-shadow: 0 20px 60px -15px rgba(255,45,85,0.25), 0 0 0 1px rgba(255,45,85,0.1);
-}
-.stat-box:hover::before { opacity: 1; }
-.stat-num {
-  font-family: 'Bebas Neue', sans-serif; font-size: 4.5rem; letter-spacing: 2px; line-height: 1;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.stat-lbl {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-  letter-spacing: 3px; text-transform: uppercase;
-  color: rgba(255,255,255,0.45); margin-top: 0.7rem;
-}
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1.5rem; background: transparent; border: none;
+      margin: 4rem 0; overflow: visible;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+      padding: 2.5rem 2rem; text-align: center;
+      position: relative; overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .stat-box::before {
+      content: ''; position: absolute; inset: 0; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255,45,85,0.08) 0%, rgba(0,245,212,0.04) 100%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .stat-box::after {
+      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      border-radius: 50%;
+    }
+    .stat-box:hover { transform: translateY(-6px); border-color: rgba(255,45,85,0.4); box-shadow: 0 20px 60px -15px rgba(255,45,85,0.25), 0 0 0 1px rgba(255,45,85,0.1); }
+    .stat-box:hover::before { opacity: 1; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 4.5rem; letter-spacing: 2px; line-height: 1;
+      background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 0.7rem; }
 
-    /* FEATURES */
+    /* FEATURES — glassmorphism like stat-box */
     .section-label {
       font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 4px;
       text-transform: uppercase; color: var(--accent2); margin-bottom: 1rem;
@@ -230,42 +200,141 @@
       letter-spacing: 2px; line-height: 1.05; margin-bottom: 3rem;
     }
     .section-title span { background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
     .features-grid {
       display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1.5px; background: var(--border); border: 1px solid var(--border);
-      border-radius: 4px; overflow: hidden; margin-bottom: 6rem;
+      gap: 1.5rem; margin-bottom: 6rem;
     }
     .feature-card {
-      background: var(--surface); padding: 2.5rem; position: relative;
-      overflow: hidden; transition: background 0.4s; cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+      padding: 2.5rem; position: relative; overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      cursor: pointer;
     }
+    /* top shine line */
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    }
+    /* bottom accent bar on hover */
     .feature-card::after {
       content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent3));
-      transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(.23,1,.32,1);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s cubic-bezier(.23,1,.32,1);
     }
-    .feature-card:hover { background: rgba(20,20,30,0.95); }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,45,85,0.35);
+      box-shadow: 0 20px 60px -15px rgba(255,45,85,0.2), 0 0 0 1px rgba(255,45,85,0.08);
+    }
     .feature-card:hover::after { transform: scaleX(1); }
     .feature-icon { font-size: 2rem; margin-bottom: 1.5rem; display: block; filter: drop-shadow(0 0 12px var(--accent)); }
     .feature-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--accent); margin-bottom: 1rem; }
     .feature-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
     .feature-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
 
-    /* PORTFOLIO */
-    .portfolio-masonry {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1.5px; background: var(--border); border: 1px solid var(--border);
-      border-radius: 4px; overflow: hidden;
+    /* ══════════════════════════
+       PORTFOLIO — masonry-style with lightbox
+    ══════════════════════════ */
+    .portfolio-filter {
+      display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2.5rem;
     }
-    .port-item { position: relative; overflow: hidden; aspect-ratio: 4/5; cursor: pointer; }
-    .port-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s cubic-bezier(.23,1,.32,1), filter 0.5s; filter: brightness(0.7) saturate(0.8); }
-    .port-item:hover img { transform: scale(1.08); filter: brightness(0.5) saturate(0.5); }
-    .port-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; background: linear-gradient(to top, rgba(5,5,7,0.9) 0%, transparent 60%); transform: translateY(20px); opacity: 0; transition: all 0.5s cubic-bezier(.23,1,.32,1); }
-    .port-item:hover .port-overlay { opacity:1; transform: translateY(0); }
-    .port-always { position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem; background: linear-gradient(to top, rgba(5,5,7,0.8) 0%, transparent 100%); }
-    .port-cat { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
-    .port-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; line-height: 1; }
-    .port-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; line-height: 1.5; }
+    .filter-btn {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 0.5rem 1.2rem; border: 1px solid var(--border);
+      border-radius: 50px; background: transparent; color: var(--muted);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255,45,85,0.07); }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .port-item {
+      position: relative; overflow: hidden;
+      border-radius: 12px; cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: transform 0.4s cubic-bezier(.23,1,.32,1), box-shadow 0.4s;
+    }
+    /* tall items span 2 rows */
+    .port-item.tall { grid-row: span 2; }
+    /* wide items span 2 cols */
+    .port-item.wide { grid-column: span 2; }
+
+    .port-item img {
+      width: 100%; height: 100%; min-height: 220px;
+      object-fit: cover; display: block;
+      transition: transform 0.6s cubic-bezier(.23,1,.32,1), filter 0.4s;
+    }
+    /*
+    .port-item:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -10px rgba(0,0,0,0.6); }
+    .port-item:hover img { transform: scale(1.06); filter: brightness(0.5) saturate(0.6); }
+
+    .port-overlay {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 1.5rem;
+      background: linear-gradient(to top, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.3) 50%, transparent 100%);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .port-item:hover .port-overlay { opacity: 1; }
+    */
+
+    .port-always {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 1.2rem 1.5rem;
+      background: linear-gradient(to top, rgba(5,5,7,0.85) 0%, transparent 100%);
+      transition: opacity 0.3s;
+    }
+    .port-item:hover .port-always { opacity: 0; }
+
+    .port-cat { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+    .port-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; line-height: 1; }
+    .port-desc { color: rgba(240,240,240,0.7); font-size: 0.82rem; margin-top: 0.5rem; line-height: 1.5; }
+    .port-zoom {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 0.8rem;
+      opacity: 0; transform: scale(0.7);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .port-item:hover .port-zoom { opacity: 1; transform: scale(1); }
+
+    /* LIGHTBOX */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(5,5,7,0.96); backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+    .lightbox img {
+      max-width: 90vw; max-height: 85vh; object-fit: contain;
+      border-radius: 8px; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
+    }
+    .lightbox-close {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s;
+    }
+    .lightbox-close:hover { background: rgba(255,45,85,0.3); }
+    .lightbox-info {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      text-align: center;
+    }
+    .lightbox-info .port-cat { margin-bottom: 0.3rem; }
+    .lightbox-info .port-name { font-size: 1.8rem; }
 
     /* ABOUT */
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
@@ -384,7 +453,8 @@
       .logo-slider-section { margin-top: 3rem; padding: 2rem 0; }
       .stats-strip { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
-      .portfolio-masonry { grid-template-columns: 1fr 1fr; }
+      .portfolio-grid { grid-template-columns: 1fr 1fr; }
+      .port-item.tall, .port-item.wide { grid-row: span 1; grid-column: span 1; }
       .about-grid { grid-template-columns: 1fr; }
       .about-block { padding: 2rem; }
       .founder-card { padding: 2rem; }
@@ -396,7 +466,7 @@
       footer .footer-right { justify-content: center; }
     }
     @media (max-width: 480px) {
-      .portfolio-masonry { grid-template-columns: 1fr; }
+      .portfolio-grid { grid-template-columns: 1fr; }
       .pg-title { font-size: 3rem; }
     }
   </style>
@@ -404,6 +474,16 @@
 <body>
 
 <canvas id="bg-canvas"></canvas>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-info">
+    <div class="port-cat" id="lightbox-cat"></div>
+    <div class="port-name" id="lightbox-name"></div>
+  </div>
+</div>
 
 <div id="loading">
   <div class="load-logo">KLAMSIPRINTS</div>
@@ -444,35 +524,6 @@
         <button class="btn-ghost" onclick="switchPage('portfolio')">Portfolio ansehen</button>
       </div>
     </div>
-
-    <!--
-    <div class="logo-slider-section">
-      <div class="hero-eyebrow reveal">Vertrauen von unseren Kunden</div>
-      <div class="logo-slider-track-wrap">
-        <div class="logo-slider-track">
-          
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-
-          //loop
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-          <div class="logo-card"><img src="./img/logos/Universität_Graz_logo.svg" alt="Kunde 1"></div>
-          <div class="logo-card"><img src="./img/logos/2024-08-07.jpg" alt="Kunde 2"></div>
-        </div>
-      </div>
-    </div>
-    -->
 
     <div class="stats-strip reveal" style="margin-top:4rem;">
       <div class="stat-box"><div class="stat-num" data-count="50" data-suffix="+">0</div><div class="stat-lbl">Erfolgreiche Projekte</div></div>
@@ -518,24 +569,66 @@
   <div id="portfolio-page" class="page">
     <div class="pg-eyebrow">Unsere Arbeiten</div>
     <h1 class="pg-title">Portfolio<br><span>Projekte</span></h1>
-    <p class="pg-sub" style="margin-bottom:3rem;">Ausgewählte Arbeiten – von personalisierten Geschenken bis hin zu Dekorationsobjekten und Spielerweiterungen.</p>
-    <div class="portfolio-masonry">
-      <div class="port-item">
+    <p class="pg-sub" style="margin-bottom:2rem;">Ausgewählte Arbeiten – von personalisierten Geschenken bis hin zu Dekorationsobjekten und Spielerweiterungen.</p>
+
+    <!-- Filter Buttons -->
+    <div class="portfolio-filter">
+      <button class="filter-btn active" onclick="filterPortfolio('all', this)">Alle</button>
+      <button class="filter-btn" onclick="filterPortfolio('geschenke', this)">Geschenke</button>
+      <button class="filter-btn" onclick="filterPortfolio('dekoration', this)">Dekoration</button>
+      <button class="filter-btn" onclick="filterPortfolio('gaming', this)">Gaming</button>
+    </div>
+
+    <!-- Portfolio Grid — füge einfach weitere port-item divs hinzu -->
+    <!-- Klassen: normal = 1x1, .tall = 1x2 (hoch), .wide = 2x1 (breit) -->
+    <div class="portfolio-grid" id="portfolio-grid">
+      <div class="port-item wide" data-cat="dekoration" onclick="openLightbox('./img/produkte/HasePflanze.jpg','Dekoration','Hasen')">
+        <img src="./img/produkte/HasePflanze.jpg" alt="Hasen">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
+        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hasen</div></div>
+        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
+      </div>
+
+      <div class="port-item tall" data-cat="dekoration" onclick="openLightbox('./img/produkte/HuhnFull.jpg','Dekoration','Hühner')">
+        <img src="./img/produkte/HuhnFull.jpg" alt="Hühner" style="object-position: center bottom;">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
+        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hühner</div></div>
+        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
+      </div>
+
+      <div class="port-item wide" data-cat="dekoration" onclick="openLightbox('./img/produkte/HuhnPflanze.jpg','Dekoration','Hühner')">
+        <img src="./img/produkte/HuhnPflanze.jpg" alt="Hühner">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
+        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hühner</div></div>
+        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
+      </div>
+
+      <div class="port-item" data-cat="geschenke" onclick="openLightbox('img/besteMAMA.jpg','Geschenke','Personalisierte Schilder')">
         <img src="img/besteMAMA.jpg" alt="BesteMama">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
         <div class="port-always"><div class="port-cat">Geschenke</div><div class="port-name">Personalisierte Schilder</div></div>
         <div class="port-overlay"><div class="port-cat">Geschenke</div><div class="port-name">Personalisierte Schilder</div><p class="port-desc">3D-gedruckte Schilder als perfektes individuelles Geschenk für jeden Anlass.</p></div>
       </div>
-      <div class="port-item">
+
+      <div class="port-item" data-cat="dekoration" onclick="openLightbox('img/sternenkueche.jpg','Dekoration','Wohndekor Aufsteller')">
         <img src="img/sternenkueche.jpg" alt="Sternenküche">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
         <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Wohndekor</div></div>
         <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Wohndekor Aufsteller</div><p class="port-desc">Elegante Aufsteller, die Ihr Zuhause mit einem modernen Touch verschönern.</p></div>
       </div>
-      <div class="port-item">
+
+      <div class="port-item" data-cat="gaming" onclick="openLightbox('img/IMG_4792.jpg','Gaming','Brettspiel-Erweiterungen')">
         <img src="img/IMG_4792.jpg" alt="Spielverbesserungen">
+        <div class="port-zoom"><i class="fas fa-expand"></i></div>
         <div class="port-always"><div class="port-cat">Gaming</div><div class="port-name">Brettspiel-Extras</div></div>
         <div class="port-overlay"><div class="port-cat">Gaming</div><div class="port-name">Brettspiel-Erweiterungen</div><p class="port-desc">Maßgefertigte Organizer, Token und Erweiterungen für Ihr Lieblingsspiel.</p></div>
       </div>
+
+      <!-- Weitere Bilder hier einfügen — Beispiele: -->
+      
+
     </div>
+
     <div style="margin-top:4rem; text-align:center;" class="reveal">
       <p style="color:var(--muted); font-size:0.9rem; font-family:'JetBrains Mono',monospace; letter-spacing:2px; text-transform:uppercase; margin-bottom:1.5rem;">Ihr Projekt dabei?</p>
       <button class="btn-main" onclick="switchPage('contact')">Jetzt anfragen →</button>
@@ -615,7 +708,7 @@
     <h1 class="pg-title"><span>Impressum</span></h1>
     <div class="legal-box">
       <h2>Angaben gemäß § 5 ECG (Österreich)</h2>
-      <p>Luca Klaminger<br>KlamsiPrints<br><br>8160 Weiz<br>Österreich</p>
+      <p>Luca Klaminger<br>KlamsiPrints<br>8160 Weiz<br>Österreich</p>
       <h2>Kontakt</h2>
       <p>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
       <h2>Verantwortlich für den Inhalt</h2>
@@ -631,7 +724,7 @@
     <h1 class="pg-title"><span>Datenschutz</span>erklärung</h1>
     <div class="legal-box">
       <h2>1. Verantwortlicher</h2>
-      <p>Luca Klaminger · KlamsiPrints · Schillerstraße 13 · 8160 Weiz · Österreich<br>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
+      <p>Luca Klaminger · KlamsiPrints · 8160 Weiz · Österreich<br>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
       <div class="legal-divider"></div>
       <h2>2. Welche Daten wir erheben</h2>
       <p>Wenn Sie unser Kontaktformular nutzen, erheben wir folgende personenbezogene Daten:</p>
@@ -639,31 +732,26 @@
       <p>Beim bloßen Besuch unserer Website werden keine personenbezogenen Daten aktiv gespeichert. Es werden keine Cookies gesetzt und kein Tracking durchgeführt.</p>
       <div class="legal-divider"></div>
       <h2>3. Zweck der Verarbeitung</h2>
-      <p>Ihre Daten werden ausschließlich verwendet, um Ihre Anfrage zu bearbeiten und Ihnen ein individuelles Angebot zu unterbreiten. Eine Weitergabe an Dritte erfolgt nicht, außer im Rahmen der unten beschriebenen Auftragsverarbeitung.</p>
+      <p>Ihre Daten werden ausschließlich verwendet, um Ihre Anfrage zu bearbeiten und Ihnen ein individuelles Angebot zu unterbreiten.</p>
       <div class="legal-divider"></div>
       <h2>4. Rechtsgrundlage</h2>
       <p>Die Verarbeitung Ihrer Daten erfolgt auf Basis von Art. 6 Abs. 1 lit. b DSGVO (Vertragsanbahnung) sowie Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch Absenden des Formulars).</p>
       <div class="legal-divider"></div>
       <h2>5. Drittanbieter: Formspree</h2>
-      <p>Wir verwenden den Dienst <strong>Formspree</strong> (Formspree, Inc., USA) zur Verarbeitung von Kontaktformular-Einsendungen. Ihre Daten werden an Formspree-Server übertragen und dort als Auftragsverarbeiter gemäß DSGVO verarbeitet.</p>
+      <p>Wir verwenden den Dienst <strong>Formspree</strong> (Formspree, Inc., USA) zur Verarbeitung von Kontaktformular-Einsendungen.</p>
       <p>Datenschutzerklärung von Formspree: <a href="https://formspree.io/legal/privacy-policy" target="_blank">formspree.io/legal/privacy-policy</a></p>
       <div class="legal-divider"></div>
       <h2>6. Drittanbieter: Google Fonts</h2>
-      <p>Diese Website verwendet Google Fonts (Google LLC, USA). Beim Laden der Seite wird eine Verbindung zu Google-Servern hergestellt, wobei Ihre IP-Adresse übermittelt werden kann. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einheitlicher Darstellung).</p>
+      <p>Diese Website verwendet Google Fonts (Google LLC, USA). Beim Laden der Seite wird eine Verbindung zu Google-Servern hergestellt, wobei Ihre IP-Adresse übermittelt werden kann.</p>
       <div class="legal-divider"></div>
       <h2>7. Speicherdauer</h2>
-      <p>Ihre Daten werden nur so lange gespeichert, wie es für die Bearbeitung Ihrer Anfrage notwendig ist, maximal jedoch 2 Jahre, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
+      <p>Ihre Daten werden maximal 2 Jahre gespeichert, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
       <div class="legal-divider"></div>
       <h2>8. Ihre Rechte</h2>
-      <p>Sie haben gemäß DSGVO folgende Rechte:</p>
       <ul>
-        <li><strong>Auskunft</strong> über gespeicherte Daten (Art. 15)</li>
-        <li><strong>Berichtigung</strong> unrichtiger Daten (Art. 16)</li>
-        <li><strong>Löschung</strong> Ihrer Daten (Art. 17)</li>
-        <li><strong>Einschränkung</strong> der Verarbeitung (Art. 18)</li>
-        <li><strong>Widerspruch</strong> gegen die Verarbeitung (Art. 21)</li>
-        <li><strong>Datenübertragbarkeit</strong> (Art. 20)</li>
-        <li><strong>Widerruf</strong> einer Einwilligung jederzeit mit Wirkung für die Zukunft</li>
+        <li><strong>Auskunft</strong> (Art. 15)</li><li><strong>Berichtigung</strong> (Art. 16)</li>
+        <li><strong>Löschung</strong> (Art. 17)</li><li><strong>Einschränkung</strong> (Art. 18)</li>
+        <li><strong>Widerspruch</strong> (Art. 21)</li><li><strong>Datenübertragbarkeit</strong> (Art. 20)</li>
       </ul>
       <p>Kontakt: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
       <div class="legal-divider"></div>
@@ -681,42 +769,42 @@
     <h1 class="pg-title">Allgemeine<br><span>Geschäftsbedingungen</span></h1>
     <div class="legal-box">
       <h2>1. Geltungsbereich</h2>
-      <p>Diese AGB gelten für alle Verträge zwischen KlamsiPrints (Inhaber: Luca Klaminger, 8160 Weiz, Österreich) und dem Kunden über 3D-Druck-Dienstleistungen und damit verbundene Leistungen. Abweichende Bedingungen des Kunden werden nicht anerkannt, es sei denn, KlamsiPrints stimmt ausdrücklich schriftlich zu.</p>
+      <p>Diese AGB gelten für alle Verträge zwischen KlamsiPrints (Inhaber: Luca Klaminger, 8160 Weiz, Österreich) und dem Kunden über 3D-Druck-Dienstleistungen und damit verbundene Leistungen.</p>
       <div class="legal-divider"></div>
       <h2>2. Vertragsschluss</h2>
-      <p>Ein Vertrag kommt zustande, sobald KlamsiPrints die Anfrage des Kunden schriftlich per E-Mail bestätigt und ein individuelles Angebot angenommen wird. Die bloße Bestätigung des Eingangs einer Anfrage stellt noch keinen Vertragsschluss dar.</p>
+      <p>Ein Vertrag kommt zustande, sobald KlamsiPrints die Anfrage schriftlich per E-Mail bestätigt und ein individuelles Angebot angenommen wird.</p>
       <div class="legal-divider"></div>
       <h2>3. Leistungsumfang</h2>
       <h3>3.1 3D-Druckaufträge</h3>
       <p>KlamsiPrints druckt vom Kunden bereitgestellte oder gemeinsam erarbeitete 3D-Modelle in der vereinbarten Qualität, Farbe und Stückzahl.</p>
       <h3>3.2 Designleistungen</h3>
-      <p>Auf Wunsch erstellt KlamsiPrints 3D-Modelle nach Vorgabe des Kunden. Der genaue Umfang wird individuell vereinbart.</p>
+      <p>Auf Wunsch erstellt KlamsiPrints 3D-Modelle nach Vorgabe des Kunden.</p>
       <h3>3.3 Materialien</h3>
       <p>Es wird ausschließlich hochwertiges PLA-Filament verwendet, sofern nicht ausdrücklich ein anderes Material vereinbart wird.</p>
       <div class="legal-divider"></div>
       <h2>4. Preise und Zahlung</h2>
-      <p>Alle Preise werden individuell nach Aufwand, Materialverbrauch und Druckzeit kalkuliert und im Angebot angegeben. Die Preise verstehen sich als Endpreise. Zahlung erfolgt nach Abschluss des Auftrags und Lieferung, sofern nicht anders vereinbart. Bei größeren Aufträgen kann eine Anzahlung von bis zu 50 % vereinbart werden.</p>
+      <p>Alle Preise werden individuell kalkuliert und im Angebot angegeben. Bei größeren Aufträgen kann eine Anzahlung von bis zu 50 % vereinbart werden.</p>
       <div class="legal-divider"></div>
       <h2>5. Lieferung</h2>
-      <p>Lieferzeiten werden individuell vereinbart und sind Richtwerte. KlamsiPrints haftet nicht für Verzögerungen durch höhere Gewalt, Materialengpässe oder unvorhergesehene technische Probleme. Der Versand erfolgt auf Rechnung und Risiko des Kunden.</p>
+      <p>Lieferzeiten sind Richtwerte. KlamsiPrints haftet nicht für Verzögerungen durch höhere Gewalt oder unvorhergesehene technische Probleme.</p>
       <div class="legal-divider"></div>
       <h2>6. Eigentum an Dateien und Modellen</h2>
-      <p>Vom Kunden bereitgestellte Dateien verbleiben in dessen Eigentum. Der Kunde versichert, zur Nutzung berechtigt zu sein und keine Urheberrechte Dritter zu verletzen. Für Rechtsverletzungen durch bereitgestellte Dateien haftet ausschließlich der Kunde. Von KlamsiPrints erstellte Designs bleiben bis zur vollständigen Bezahlung Eigentum von KlamsiPrints.</p>
+      <p>Vom Kunden bereitgestellte Dateien verbleiben in dessen Eigentum. Für Urheberrechtsverletzungen durch bereitgestellte Dateien haftet ausschließlich der Kunde.</p>
       <div class="legal-divider"></div>
       <h2>7. Gewährleistung und Haftung</h2>
-      <p>Offensichtliche Mängel sind innerhalb von 14 Tagen nach Erhalt schriftlich zu melden. Die Haftung von KlamsiPrints beschränkt sich auf Vorsatz und grobe Fahrlässigkeit. Eine Haftung für leichte Fahrlässigkeit ist ausgeschlossen, soweit gesetzlich zulässig. Die Haftung ist auf den jeweiligen Auftragswert begrenzt.</p>
+      <p>Offensichtliche Mängel sind innerhalb von 14 Tagen nach Erhalt zu melden. Die Haftung beschränkt sich auf Vorsatz und grobe Fahrlässigkeit.</p>
       <div class="legal-divider"></div>
       <h2>8. Widerrufsrecht</h2>
-      <p>Da es sich um individuell angefertigte Produkte handelt, besteht gemäß § 18 Abs. 1 Z 3 FAGG (Österreich) kein gesetzliches Widerrufsrecht für nach Kundenspezifikation hergestellte Waren.</p>
+      <p>Gemäß § 18 Abs. 1 Z 3 FAGG besteht kein Widerrufsrecht für individuell angefertigte Waren.</p>
       <div class="legal-divider"></div>
       <h2>9. Datenschutz</h2>
       <p>Die Verarbeitung personenbezogener Daten erfolgt gemäß unserer <a onclick="switchPage('datenschutz')">Datenschutzerklärung</a>.</p>
       <div class="legal-divider"></div>
       <h2>10. Anwendbares Recht & Gerichtsstand</h2>
-      <p>Es gilt österreichisches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand ist Weiz, Österreich. Für Verbraucher gilt der gesetzliche Gerichtsstand.</p>
+      <p>Es gilt österreichisches Recht. Gerichtsstand ist Weiz, Österreich.</p>
       <div class="legal-divider"></div>
       <h2>11. Salvatorische Klausel</h2>
-      <p>Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.</p>
+      <p>Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen unberührt.</p>
       <p style="margin-top:2rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:1px;color:rgba(240,240,240,0.3);">Stand: März 2026 · KlamsiPrints, Luca Klaminger</p>
     </div>
   </div>
@@ -754,7 +842,7 @@ window.addEventListener('load', () => {
   }, 400);
 });
 
-// PARTICLE CANVAS (original, unverändert)
+// PARTICLES
 (function() {
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
@@ -823,25 +911,21 @@ function initReveal() {
   }, 50);
 }
 
-// COUNT UP
+// COUNT UP — alle gleichzeitig fertig, startet erst wenn sichtbar
 function countUp() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       observer.unobserve(entry.target);
-
       const els = document.querySelectorAll('[data-count]');
-      const duration = 3000; // ms bis alle fertig sind
-
+      const duration = 3000;
       els.forEach(el => {
         const target = parseInt(el.dataset.count);
         const suffix = el.dataset.suffix || '';
         const startTime = performance.now();
-
         function tick(now) {
           const elapsed = now - startTime;
           const progress = Math.min(elapsed / duration, 1);
-          // easeOutCubic — startet schnell, verlangsamt am Ende
           const ease = 1 - Math.pow(1 - progress, 3);
           el.textContent = Math.floor(ease * target) + suffix;
           if (progress < 1) requestAnimationFrame(tick);
@@ -851,12 +935,38 @@ function countUp() {
       });
     });
   }, { threshold: 0.3 });
-
-  // beobachtet die Stats-Sektion
   const strip = document.querySelector('.stats-strip');
   if (strip) observer.observe(strip);
 }
 countUp();
+
+// PORTFOLIO FILTER
+function filterPortfolio(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.port-item').forEach(item => {
+    if (cat === 'all' || item.dataset.cat === cat) {
+      item.style.display = '';
+      item.style.animation = 'pageIn 0.4s cubic-bezier(.23,1,.32,1) both';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+// LIGHTBOX
+function openLightbox(src, cat, name) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-cat').textContent = cat;
+  document.getElementById('lightbox-name').textContent = name;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 </script>
 </body>
 </html>
