@@ -440,7 +440,7 @@
     logoClickTimer = setTimeout(() => { logoClicks = 0; }, 1500);
     if (logoClicks >= 5){
       logoClicks = 0;
-      window.location.href = "admin.html";
+      window.location.href = "Admin.html";
     }
   });
 

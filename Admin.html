@@ -60,7 +60,7 @@
       </div>
       <p class="error-text" id="pwError">Falsches Passwort.</p>
       <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%; justify-content:center; margin-top:6px;">Anmelden</button>
-      <p class="field-hint" style="margin-top:14px;"><a href="index.html">&larr; zurück zur Bestellseite</a></p>
+      <p class="field-hint" style="margin-top:14px;"><a href="Index.html">&larr; zurück zur Bestellseite</a></p>
     </div>
   </div>
 </div>
@@ -86,7 +86,7 @@
     <button class="btn btn-accent btn-sm" id="exportCsvBtn" type="button">CSV exportieren</button>
     <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Alle Bestellungen löschen</button>
     <div class="nav-spacer"></div>
-    <a class="btn btn-ghost btn-sm" href="index.html">Zur Bestellseite</a>
+    <a class="btn btn-ghost btn-sm" href="Index.html">Zur Bestellseite</a>
   </div>
 
   <div class="card" style="padding:0; overflow:hidden;">
@@ -132,7 +132,7 @@
 <script>
 (function(){
   "use strict";
-  const ADMIN_PASSWORD = "123456";
+  const ADMIN_PASSWORD_HASH = "d261aa3454b76eb8e8b2fd179bd1239532c00c1478983ac51dd351696e42e14a";
   const ORDER_STATUSES = ["in planung", "wird gedruckt", "abholbereit"];
 
   const el = id => document.getElementById(id);
@@ -229,9 +229,15 @@
   }
 
   // ---- Login ----
-  function tryLogin(){
+  async function hashPassword(password){
+    const data = new TextEncoder().encode(password);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function tryLogin(){
     const val = el('pwInput').value;
-    if (val === ADMIN_PASSWORD){
+    if (await hashPassword(val) === ADMIN_PASSWORD_HASH){
       sessionStorage.setItem('klamsiprints_admin', '1');
       el('loginScreen').style.display = 'none';
       el('dashScreen').style.display = 'block';
