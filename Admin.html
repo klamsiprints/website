@@ -133,6 +133,7 @@
 (function(){
   "use strict";
   const ADMIN_PASSWORD_HASH = "d261aa3454b76eb8e8b2fd179bd1239532c00c1478983ac51dd351696e42e14a";
+  const SHEET_URL = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
   const ORDER_STATUSES = ["in planung", "wird gedruckt", "abholbereit"];
 
   const el = id => document.getElementById(id);
@@ -144,6 +145,24 @@
 
   function saveOrders(orders){
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
+  }
+
+  async function syncRemoteOrders(){
+    try {
+      const response = await fetch(SHEET_URL);
+      const data = await response.json();
+      if (!data.ok || !Array.isArray(data.orders)) throw new Error('Ungültige Antwort');
+      const localOrders = getOrders();
+      const remoteById = new Map(data.orders.map(order => [order.id, order]));
+      localOrders.forEach(order => remoteById.set(order.id, { ...remoteById.get(order.id), ...order }));
+      saveOrders(Array.from(remoteById.values()));
+      refresh();
+      el('sheetStatus').textContent = "Verbunden";
+      el('sheetStatus').className = "status-pill status-ok";
+    } catch (error) {
+      el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
+      el('sheetStatus').className = "status-pill status-off";
+    }
   }
 
   function renderStats(orders){
@@ -243,10 +262,10 @@
       el('dashScreen').style.display = 'block';
       el('pwError').classList.remove('is-visible');
       refresh();
-      const savedUrl = localStorage.getItem('klamsiprints_sheet_url') || "";
-      el('sheetUrlInput').value = savedUrl;
-      el('sheetStatus').textContent = savedUrl ? "Aktiv" : "Nicht konfiguriert";
-      el('sheetStatus').className = "status-pill " + (savedUrl ? "status-ok" : "status-off");
+      el('sheetUrlInput').value = SHEET_URL;
+      el('sheetStatus').textContent = "Wird geladen";
+      el('sheetStatus').className = "status-pill status-off";
+      syncRemoteOrders();
     } else {
       el('pwError').classList.add('is-visible');
     }
@@ -294,16 +313,8 @@
   });
 
   el('saveSheetUrlBtn').addEventListener('click', () => {
-    const url = el('sheetUrlInput').value.trim();
-    if (url){
-      localStorage.setItem('klamsiprints_sheet_url', url);
-      el('sheetStatus').textContent = "Aktiv";
-      el('sheetStatus').className = "status-pill status-ok";
-    } else {
-      localStorage.removeItem('klamsiprints_sheet_url');
-      el('sheetStatus').textContent = "Nicht konfiguriert";
-      el('sheetStatus').className = "status-pill status-off";
-    }
+    el('sheetUrlInput').value = SHEET_URL;
+    syncRemoteOrders();
   });
 
   // Stay logged in within the browser tab session
@@ -311,10 +322,10 @@
     el('loginScreen').style.display = 'none';
     el('dashScreen').style.display = 'block';
     refresh();
-    const savedUrl = localStorage.getItem('klamsiprints_sheet_url') || "";
-    el('sheetUrlInput').value = savedUrl;
-    el('sheetStatus').textContent = savedUrl ? "Aktiv" : "Nicht konfiguriert";
-    el('sheetStatus').className = "status-pill " + (savedUrl ? "status-ok" : "status-off");
+    el('sheetUrlInput').value = SHEET_URL;
+    el('sheetStatus').textContent = "Wird geladen";
+    el('sheetStatus').className = "status-pill status-off";
+    syncRemoteOrders();
   }
 })();
 </script>

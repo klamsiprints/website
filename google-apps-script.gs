@@ -3,6 +3,10 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
+    if (sheet.getLastRow() === 0 || !sheet.getRange(1, 1).getValue()) {
+      sheet.appendRow(["Bestell-Nr", "Datum", "Name", "E-Mail", "Telefon", "Produkte", "Versand", "Zahlung", "Gesamt", "Anmerkung"]);
+    }
+
     sheet.appendRow([
       data.id || "",
       data.date || new Date().toISOString(),
@@ -27,7 +31,41 @@ function doPost(e) {
 }
 
 function doGet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var values = sheet.getDataRange().getValues();
+  var firstRowIsOrder = values.length && String(values[0][0]).indexOf("KP-") === 0;
+  var orders = values.slice(firstRowIsOrder ? 0 : 1).filter(function(row) {
+    return row[0];
+  }).map(function(row) {
+    var productText = String(row[5] || "");
+    var items = productText.split('; ').filter(Boolean).map(function(product) {
+      var match = product.match(/^(.*?) x(\d+) \((.*)\)$/);
+      return {
+        name: match ? match[1] : product,
+        qty: match ? Number(match[2]) : 1,
+        colors: match ? match[3].split('/').map(function(detail) { return detail.split(',')[0].trim(); }) : [],
+        sizes: [],
+        texts: []
+      };
+    });
+    return {
+      id: String(row[0]),
+      date: row[1] || new Date().toISOString(),
+      items: items,
+      total: Number(row[8]) || 0,
+      shipping: String(row[6] || ""),
+      payment: String(row[7] || ""),
+      customer: {
+        name: String(row[2] || ""),
+        email: String(row[3] || ""),
+        phone: String(row[4] || ""),
+        note: String(row[9] || "")
+      },
+      status: "in planung",
+      completed: false
+    };
+  });
   return ContentService
-    .createTextOutput("KlamsiPrints Google Sheets Verbindung ist aktiv.")
-    .setMimeType(ContentService.MimeType.TEXT);
+    .createTextOutput(JSON.stringify({ ok: true, orders: orders }))
+    .setMimeType(ContentService.MimeType.JSON);
 }

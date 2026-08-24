@@ -392,7 +392,7 @@
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
 
     // Optional: an Google Sheets senden, falls Admin eine Webhook-URL hinterlegt hat
-    const sheetUrl = localStorage.getItem('klamsiprints_sheet_url');
+    const sheetUrl = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
     if (sheetUrl){
       const payload = {
         id: order.id,
