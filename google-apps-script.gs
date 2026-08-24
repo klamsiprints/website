@@ -30,7 +30,7 @@ function doPost(e) {
   }
 }
 
-function doGet() {
+function doGet(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var values = sheet.getDataRange().getValues();
   var firstRowIsOrder = values.length && String(values[0][0]).indexOf("KP-") === 0;
@@ -65,7 +65,14 @@ function doGet() {
       completed: false
     };
   });
+  var result = JSON.stringify({ ok: true, orders: orders });
+  var callback = e && e.parameter ? e.parameter.callback : "";
+  if (callback && /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(callback)) {
+    return ContentService
+      .createTextOutput(callback + "(" + result + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify({ ok: true, orders: orders }))
+    .createTextOutput(result)
     .setMimeType(ContentService.MimeType.JSON);
 }

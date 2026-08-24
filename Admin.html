@@ -147,10 +147,22 @@
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
   }
 
-  async function syncRemoteOrders(){
-    try {
-      const response = await fetch(SHEET_URL);
-      const data = await response.json();
+  function syncRemoteOrders(){
+    const callbackName = 'receiveOrders_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
+      el('sheetStatus').className = "status-pill status-off";
+    }, 10000);
+    function cleanup(){
+      clearTimeout(timeout);
+      delete window[callbackName];
+      script.remove();
+    }
+    window[callbackName] = data => {
+      cleanup();
+      try {
       if (!data.ok || !Array.isArray(data.orders)) throw new Error('Ungültige Antwort');
       const localOrders = getOrders();
       const remoteById = new Map(data.orders.map(order => [order.id, order]));
@@ -159,10 +171,18 @@
       refresh();
       el('sheetStatus').textContent = "Verbunden";
       el('sheetStatus').className = "status-pill status-ok";
-    } catch (error) {
+      } catch (error) {
+        el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
+        el('sheetStatus').className = "status-pill status-off";
+      }
+    };
+    script.onerror = () => {
+      cleanup();
       el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
       el('sheetStatus').className = "status-pill status-off";
-    }
+    };
+    script.src = SHEET_URL + '?callback=' + encodeURIComponent(callbackName);
+    document.head.appendChild(script);
   }
 
   function renderStats(orders){
