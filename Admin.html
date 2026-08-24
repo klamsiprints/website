@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<title>KlamsiPrints – Admin</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .admin-shell{ max-width: 1440px; margin: 0 auto; padding: 28px 32px 80px; }
+  .login-wrap{ max-width: 380px; margin: 12vh auto 0; text-align: center; }
+  .login-wrap .card{ text-align: left; }
+  table{ width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td{ text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th{ color: var(--text-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+  tr:hover td{ background: var(--blue-light); }
+  .table-wrap{ overflow-x: auto; }
+  .admin-toolbar{ display:flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+  .admin-toolbar .nav-spacer{ flex: 1; }
+  .stat-row{ display:flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card{ background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 18px; flex: 1; min-width: 140px; }
+  .stat-card .n{ font-size: 1.4rem; font-weight: 700; color: var(--blue-dark); font-family: 'Space Grotesk', sans-serif; }
+  .stat-card .l{ font-size: .74rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .empty-state{ text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .sheet-config{ margin-top: 24px; }
+  .sheet-config input{ margin-bottom: 10px; }
+  .status-pill{ font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); }
+  .status-ok{ background: var(--success-light); color: var(--success); }
+  .status-off{ background: #EEF1F6; color: #8A94A6; }
+  .order-status{ min-width: 145px; padding: 7px 9px; font: inherit; font-size: .78rem; }
+  .order-complete{ width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
+  .order-dot{ display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; vertical-align: -1px; }
+  .order-dot-planning{ background: #2F80ED; }
+  .order-dot-printing{ background: #F2C94C; }
+  .order-dot-ready{ background: #2FAE66; }
+  .is-complete td{ opacity: .62; }
+  .is-complete td:first-child{ text-decoration: line-through; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="admin-shell" id="loginScreen">
+  <div class="login-wrap">
+    <div class="top-bar" style="justify-content:center; margin-bottom: 30px;">
+      <span class="brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M3 7l9 5 9-5M12 12v10" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-text">KlamsiPrints<span class="brand-sub">Admin-Bereich</span></span>
+      </span>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label for="pwInput">Admin-Passwort</label>
+        <input type="password" id="pwInput" placeholder="Passwort eingeben" autocomplete="current-password">
+      </div>
+      <p class="error-text" id="pwError">Falsches Passwort.</p>
+      <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%; justify-content:center; margin-top:6px;">Anmelden</button>
+      <p class="field-hint" style="margin-top:14px;"><a href="index.html">&larr; zurück zur Bestellseite</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="admin-shell" id="dashScreen" style="display:none;">
+  <div class="top-bar">
+    <span class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3 7l9 5 9-5M12 12v10" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">KlamsiPrints<span class="brand-sub">Admin-Bereich</span></span>
+    </span>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" type="button">Abmelden</button>
+  </div>
+
+  <div class="stat-row" id="statRow"></div>
+
+  <div class="admin-toolbar">
+    <button class="btn btn-accent btn-sm" id="exportCsvBtn" type="button">CSV exportieren</button>
+    <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Alle Bestellungen löschen</button>
+    <div class="nav-spacer"></div>
+    <a class="btn btn-ghost btn-sm" href="index.html">Zur Bestellseite</a>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div class="table-wrap">
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th>Bestell-Nr.</th>
+            <th>Datum</th>
+            <th>Kunde</th>
+            <th>Produkte</th>
+            <th>Versand</th>
+            <th>Zahlung</th>
+            <th>Gesamt</th>
+            <th>Status</th>
+            <th>Erledigt</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      Noch keine Bestellungen vorhanden.
+    </div>
+  </div>
+
+  <div class="card sheet-config">
+    <h3 class="step-title" style="font-size:1.05rem; margin-bottom:6px;">Google Sheets Synchronisierung</h3>
+    <p class="step-desc" style="margin-bottom:16px;">
+      Trage hier die Web-App-URL deines Google Apps Scripts ein. Neue Bestellungen werden dann automatisch
+      als Zeile in dein Google Sheet geschrieben. Der benoetigte Script-Code steht in
+      <strong>google-apps-script.gs</strong> im Projektordner.
+      <span class="status-pill" id="sheetStatus">—</span>
+    </p>
+    <div class="field">
+      <label for="sheetUrlInput">Apps-Script Web-App URL</label>
+      <input type="text" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <button class="btn btn-primary btn-sm" id="saveSheetUrlBtn" type="button">Speichern</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const ADMIN_PASSWORD = "123456";
+  const ORDER_STATUSES = ["in planung", "wird gedruckt", "abholbereit"];
+
+  const el = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  function getOrders(){
+    return JSON.parse(localStorage.getItem('klamsiprints_orders') || '[]');
+  }
+
+  function saveOrders(orders){
+    localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
+  }
+
+  function renderStats(orders){
+    const total = orders.reduce((s,o) => s + o.total, 0);
+    el('statRow').innerHTML = `
+      <div class="stat-card"><div class="n">${orders.length}</div><div class="l">Bestellungen</div></div>
+      <div class="stat-card"><div class="n">${fmt(total)}</div><div class="l">Umsatz gesamt</div></div>
+      <div class="stat-card"><div class="n">${orders.filter(o=>o.shipping==='abholung').length}</div><div class="l">Abholungen</div></div>
+    `;
+  }
+
+  function renderTable(orders){
+    const body = el('ordersBody');
+    const empty = el('emptyState');
+    if (orders.length === 0){
+      body.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+    body.innerHTML = orders.slice().reverse().map(o => {
+      const productsStr = o.items.map(i => {
+        const details = i.colors.map((color, index) => `${color}${i.sizes?.[index] ? ', ' + i.sizes[index] : ''}${i.texts?.[index] ? ', Wunschtext: ' + i.texts[index] : ''}`).join(' | ');
+        return `${i.name} ×${i.qty} (${details})`;
+      }).join('<br>');
+      const dateStr = new Date(o.date).toLocaleString('de-AT');
+      const status = ORDER_STATUSES.includes(o.status) ? o.status : "in planung";
+      const dotClass = status === "abholbereit" ? "order-dot-ready" : status === "wird gedruckt" ? "order-dot-printing" : "order-dot-planning";
+      const statusOptions = ORDER_STATUSES.map(option => `<option value="${option}" ${option === status ? 'selected' : ''}>${option}</option>`).join('');
+      return `
+        <tr class="${o.completed ? 'is-complete' : ''}">
+          <td><span class="order-dot ${dotClass}" aria-hidden="true"></span><strong>${o.id}</strong></td>
+          <td>${dateStr}</td>
+          <td>${o.customer.name}<br><span style="color:var(--text-muted)">${o.customer.email}</span></td>
+          <td>${productsStr}</td>
+          <td>${o.shipping}</td>
+          <td>${o.payment}</td>
+          <td><strong>${fmt(o.total)}</strong></td>
+          <td>
+            <select class="order-status" data-order-id="${o.id}" aria-label="Status für ${o.id}">
+              ${statusOptions}
+            </select>
+          </td>
+          <td><input class="order-complete" type="checkbox" data-order-id="${o.id}" ${o.completed ? 'checked' : ''} aria-label="Bestellung ${o.id} erledigt"></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function updateOrder(orderId, changes){
+    const orders = getOrders();
+    const order = orders.find(item => item.id === orderId);
+    if (!order) return;
+    Object.assign(order, changes);
+    saveOrders(orders);
+    refresh();
+  }
+
+  function refresh(){
+    const orders = getOrders();
+    renderStats(orders);
+    renderTable(orders);
+  }
+
+  function toCsv(orders){
+    const headers = ["Bestell-Nr","Datum","Name","E-Mail","Telefon","Produkte","Versand","Zahlung","Gesamt","Status","Erledigt","Anmerkung"];
+    const rows = orders.map(o => [
+      o.id,
+      new Date(o.date).toLocaleString('de-AT'),
+      o.customer.name,
+      o.customer.email,
+      o.customer.phone || "",
+      o.items.map(i => `${i.name} x${i.qty} (${i.colors.map((color, index) => `${color}${i.sizes?.[index] ? ', ' + i.sizes[index] : ''}${i.texts?.[index] ? ', Wunschtext: ' + i.texts[index] : ''}`).join('/')})`).join(' | '),
+      o.shipping,
+      o.payment,
+      o.total.toFixed(2).replace('.',','),
+      o.status || "in planung",
+      o.completed ? "Ja" : "Nein",
+      (o.customer.note || "").replace(/\n/g,' ')
+    ]);
+    const escape = v => `"${String(v).replace(/"/g,'""')}"`;
+    return [headers, ...rows].map(r => r.map(escape).join(';')).join('\r\n');
+  }
+
+  // ---- Login ----
+  function tryLogin(){
+    const val = el('pwInput').value;
+    if (val === ADMIN_PASSWORD){
+      sessionStorage.setItem('klamsiprints_admin', '1');
+      el('loginScreen').style.display = 'none';
+      el('dashScreen').style.display = 'block';
+      el('pwError').classList.remove('is-visible');
+      refresh();
+      const savedUrl = localStorage.getItem('klamsiprints_sheet_url') || "";
+      el('sheetUrlInput').value = savedUrl;
+      el('sheetStatus').textContent = savedUrl ? "Aktiv" : "Nicht konfiguriert";
+      el('sheetStatus').className = "status-pill " + (savedUrl ? "status-ok" : "status-off");
+    } else {
+      el('pwError').classList.add('is-visible');
+    }
+  }
+
+  el('loginBtn').addEventListener('click', tryLogin);
+  el('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+  el('logoutBtn').addEventListener('click', () => {
+    sessionStorage.removeItem('klamsiprints_admin');
+    el('dashScreen').style.display = 'none';
+    el('loginScreen').style.display = 'block';
+    el('pwInput').value = "";
+  });
+
+  el('exportCsvBtn').addEventListener('click', () => {
+    const orders = getOrders();
+    const csv = toCsv(orders);
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `klamsiprints-bestellungen-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  el('clearBtn').addEventListener('click', () => {
+    if (confirm('Wirklich alle Bestellungen unwiderruflich löschen?')){
+      localStorage.removeItem('klamsiprints_orders');
+      refresh();
+    }
+  });
+
+  el('ordersBody').addEventListener('change', event => {
+    const control = event.target;
+    const orderId = control.dataset.orderId;
+    if (!orderId) return;
+    if (control.classList.contains('order-status')){
+      updateOrder(orderId, { status: control.value });
+    }
+    if (control.classList.contains('order-complete')){
+      updateOrder(orderId, { completed: control.checked });
+    }
+  });
+
+  el('saveSheetUrlBtn').addEventListener('click', () => {
+    const url = el('sheetUrlInput').value.trim();
+    if (url){
+      localStorage.setItem('klamsiprints_sheet_url', url);
+      el('sheetStatus').textContent = "Aktiv";
+      el('sheetStatus').className = "status-pill status-ok";
+    } else {
+      localStorage.removeItem('klamsiprints_sheet_url');
+      el('sheetStatus').textContent = "Nicht konfiguriert";
+      el('sheetStatus').className = "status-pill status-off";
+    }
+  });
+
+  // Stay logged in within the browser tab session
+  if (sessionStorage.getItem('klamsiprints_admin') === '1'){
+    el('loginScreen').style.display = 'none';
+    el('dashScreen').style.display = 'block';
+    refresh();
+    const savedUrl = localStorage.getItem('klamsiprints_sheet_url') || "";
+    el('sheetUrlInput').value = savedUrl;
+    el('sheetStatus').textContent = savedUrl ? "Aktiv" : "Nicht konfiguriert";
+    el('sheetStatus').className = "status-pill " + (savedUrl ? "status-ok" : "status-off");
+  }
+})();
+</script>
+</body>
+</html>

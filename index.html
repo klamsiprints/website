@@ -1,972 +1,162 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>KlamsiPrints – 3D Druck Service</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    :root {
-      --bg: #050507;
-      --surface: rgba(12,12,18,0.85);
-      --surface2: rgba(20,20,30,0.6);
-      --accent: #ff2d55;
-      --accent2: #00f5d4;
-      --accent3: #f7b500;
-      --text: #f0f0f0;
-      --muted: rgba(240,240,240,0.5);
-      --border: rgba(255,255,255,0.06);
-      --glow: rgba(255,45,85,0.35);
-      --glow2: rgba(0,245,212,0.25);
-    }
-
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Syne', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow-x: hidden;
-    }
-
-    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 1; opacity: 0.4;
-    }
-
-    .container {
-      position: relative; z-index: 2;
-      max-width: 1400px; margin: 0 auto;
-      padding: 1.5rem 2rem; min-height: 100vh;
-      display: flex; flex-direction: column;
-    }
-
-    /* NAV */
-    nav {
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(5,5,7,0.7); backdrop-filter: blur(20px);
-      border: 1px solid var(--border); border-radius: 4px;
-      padding: 1rem 2rem; margin-bottom: 2rem;
-      position: sticky; top: 1.5rem; z-index: 100;
-    }
-    .logo {
-      font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent3));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      cursor: pointer; transition: opacity 0.2s;
-    }
-    .logo:hover { opacity: 0.8; }
-    .nav-links { display:flex; gap:2.5rem; align-items: center; }
-    .nav-links a {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
-      font-weight: 400; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--muted); text-decoration: none; cursor: pointer;
-      transition: color 0.3s; position: relative;
-    }
-    .nav-links a::before { content: '//'; color: var(--accent); margin-right: 4px; opacity: 0; transition: opacity 0.3s; }
-    .nav-links a:hover, .nav-links a.active { color: var(--text); }
-    .nav-links a:hover::before, .nav-links a.active::before { opacity: 1; }
-
-    /* PAGES */
-    .page { display: none; }
-    .page.active-page { display: block; animation: pageIn 0.6s cubic-bezier(.23,1,.32,1) both; }
-    @keyframes pageIn { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
-
-    /* HOME */
-    .hero {
-      min-height: 85vh; display: flex; flex-direction: column;
-      justify-content: center; align-items: flex-start;
-      padding: 4rem 0 2rem; position: relative;
-    }
-    .hero-eyebrow {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
-      letter-spacing: 4px; color: var(--accent); text-transform: uppercase;
-      margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px;
-    }
-    .hero-eyebrow::before { content: ''; display: block; width: 40px; height: 1px; background: var(--accent); }
-    .hero-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(4rem, 10vw, 10rem);
-      line-height: 0.92; letter-spacing: 2px; margin-bottom: 2rem;
-    }
-    .hero-title .line-1 { color: var(--text); display: block; }
-    .hero-title .line-2 {
-      display: block;
-      background: linear-gradient(90deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
-      background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      animation: gradShift 4s linear infinite;
-    }
-    @keyframes gradShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-    .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 520px; line-height: 1.7; margin-bottom: 3rem; }
-    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn-main {
-      font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 1rem;
-      padding: 1rem 2.5rem; background: var(--accent); color: #fff;
-      border: none; border-radius: 3px; cursor: pointer;
-      position: relative; overflow: hidden; transition: all 0.3s; text-transform: uppercase;
-    }
-    .btn-main::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      transform: translateX(-100%); transition: transform 0.5s;
-    }
-    .btn-main:hover::after { transform: translateX(100%); }
-    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
-    .btn-ghost {
-      font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 1rem;
-      padding: 1rem 2.5rem; background: transparent; color: var(--text);
-      border: 1px solid var(--border); border-radius: 3px; cursor: pointer;
-      transition: all 0.3s; text-transform: uppercase;
-    }
-    .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); transform: translateY(-2px); }
-
-    /* LOGO SLIDER */
-    .logo-slider-section {
-      margin-top: 5rem; width: 100vw; margin-left: calc(-50vw + 50%);
-      background: rgba(8,8,12,0.9); border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border); padding: 2.5rem 0;
-    }
-    .logo-slider-label {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-      letter-spacing: 4px; text-transform: uppercase; color: var(--muted);
-      text-align: center; margin-bottom: 2rem; opacity: 0.5;
-    }
-    .logo-slider-track-wrap {
-      overflow: hidden;
-      mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
-    }
-    .logo-slider-track { display: flex; gap: 0.5rem; width: auto; animation: logoScroll 30s linear infinite; }
-    .logo-slider-track:hover { animation-play-state: paused; }
-    @keyframes logoScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    .logo-card {
-      display: flex; align-items: center; justify-content: center;
-      width: 500px; height: 220px; border-radius: 4px; flex-shrink: 0;
-      transition: border-color 0.3s, opacity 0.3s;
-      opacity: 0.8; overflow: hidden; padding: 2px 2px;
-    }
-    .logo-card:hover { border-color: var(--accent); opacity: 1; }
-    .logo-card img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 1; transition: opacity 0.3s; }
-    .logo-card:hover img { opacity: 1; }
-
-    /* STATS */
-    .stats-strip {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1.5rem; background: transparent; border: none;
-      margin: 4rem 0; overflow: visible;
-    }
-    .stat-box {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
-      padding: 2.5rem 2rem; text-align: center;
-      position: relative; overflow: hidden;
-      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-    }
-    .stat-box::before {
-      content: ''; position: absolute; inset: 0; border-radius: 20px;
-      background: linear-gradient(135deg, rgba(255,45,85,0.08) 0%, rgba(0,245,212,0.04) 100%);
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .stat-box::after {
-      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      border-radius: 50%;
-    }
-    .stat-box:hover { transform: translateY(-6px); border-color: rgba(255,45,85,0.4); box-shadow: 0 20px 60px -15px rgba(255,45,85,0.25), 0 0 0 1px rgba(255,45,85,0.1); }
-    .stat-box:hover::before { opacity: 1; }
-    .stat-num {
-      font-family: 'Bebas Neue', sans-serif; font-size: 4.5rem; letter-spacing: 2px; line-height: 1;
-      background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 0.7rem; }
-
-    /* FEATURES — glassmorphism like stat-box */
-    .section-label {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 4px;
-      text-transform: uppercase; color: var(--accent2); margin-bottom: 1rem;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .section-label::before { content: ''; display:block; width:24px; height:1px; background:var(--accent2); }
-    .section-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem,5vw,4.5rem);
-      letter-spacing: 2px; line-height: 1.05; margin-bottom: 3rem;
-    }
-    .section-title span { background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    .features-grid {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1.5rem; margin-bottom: 6rem;
-    }
-    .feature-card {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
-      padding: 2.5rem; position: relative; overflow: hidden;
-      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-      cursor: pointer;
-    }
-    /* top shine line */
-    .feature-card::before {
-      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-    }
-    /* bottom accent bar on hover */
-    .feature-card::after {
-      content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent3));
-      transform: scaleX(0); transform-origin: left;
-      transition: transform 0.4s cubic-bezier(.23,1,.32,1);
-    }
-    .feature-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(255,45,85,0.35);
-      box-shadow: 0 20px 60px -15px rgba(255,45,85,0.2), 0 0 0 1px rgba(255,45,85,0.08);
-    }
-    .feature-card:hover::after { transform: scaleX(1); }
-    .feature-icon { font-size: 2rem; margin-bottom: 1.5rem; display: block; filter: drop-shadow(0 0 12px var(--accent)); }
-    .feature-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--accent); margin-bottom: 1rem; }
-    .feature-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
-    .feature-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
-
-    /* ══════════════════════════
-       PORTFOLIO — masonry-style with lightbox
-    ══════════════════════════ */
-    .portfolio-filter {
-      display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2.5rem;
-    }
-    .filter-btn {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-      letter-spacing: 2px; text-transform: uppercase;
-      padding: 0.5rem 1.2rem; border: 1px solid var(--border);
-      border-radius: 50px; background: transparent; color: var(--muted);
-      cursor: pointer; transition: all 0.3s;
-    }
-    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255,45,85,0.07); }
-
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
-    .port-item {
-      position: relative; overflow: hidden;
-      border-radius: 12px; cursor: pointer;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      transition: transform 0.4s cubic-bezier(.23,1,.32,1), box-shadow 0.4s;
-    }
-    /* tall items span 2 rows */
-    .port-item.tall { grid-row: span 2; }
-    /* wide items span 2 cols */
-    .port-item.wide { grid-column: span 2; }
-
-    .port-item img {
-      width: 100%; height: 100%; min-height: 220px;
-      object-fit: cover; display: block;
-      transition: transform 0.6s cubic-bezier(.23,1,.32,1), filter 0.4s;
-    }
-    /*
-    .port-item:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -10px rgba(0,0,0,0.6); }
-    .port-item:hover img { transform: scale(1.06); filter: brightness(0.5) saturate(0.6); }
-
-    .port-overlay {
-      position: absolute; inset: 0; display: flex; flex-direction: column;
-      justify-content: flex-end; padding: 1.5rem;
-      background: linear-gradient(to top, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.3) 50%, transparent 100%);
-      opacity: 0; transition: opacity 0.4s;
-    }
-    .port-item:hover .port-overlay { opacity: 1; }
-    */
-
-    .port-always {
-      position: absolute; bottom: 0; left: 0; right: 0; padding: 1.2rem 1.5rem;
-      background: linear-gradient(to top, rgba(5,5,7,0.85) 0%, transparent 100%);
-      transition: opacity 0.3s;
-    }
-    .port-item:hover .port-always { opacity: 0; }
-
-    .port-cat { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
-    .port-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; line-height: 1; }
-    .port-desc { color: rgba(240,240,240,0.7); font-size: 0.82rem; margin-top: 0.5rem; line-height: 1.5; }
-    .port-zoom {
-      position: absolute; top: 1rem; right: 1rem;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 0.8rem;
-      opacity: 0; transform: scale(0.7);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .port-item:hover .port-zoom { opacity: 1; transform: scale(1); }
-
-    /* LIGHTBOX */
-    .lightbox {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(5,5,7,0.96); backdrop-filter: blur(20px);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .lightbox.open { opacity: 1; pointer-events: all; }
-    .lightbox img {
-      max-width: 90vw; max-height: 85vh; object-fit: contain;
-      border-radius: 8px; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
-    }
-    .lightbox-close {
-      position: absolute; top: 1.5rem; right: 1.5rem;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; font-size: 1.2rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.3s;
-    }
-    .lightbox-close:hover { background: rgba(255,45,85,0.3); }
-    .lightbox-info {
-      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
-      text-align: center;
-    }
-    .lightbox-info .port-cat { margin-bottom: 0.3rem; }
-    .lightbox-info .port-name { font-size: 1.8rem; }
-
-    /* ABOUT */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
-    .about-block { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3rem; }
-    .about-block h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
-    .about-block p { color: var(--muted); line-height: 1.8; margin-bottom: 1.2rem; font-size: 0.95rem; }
-    .printers { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
-    .printer-line { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent2); transition: border-color 0.3s; }
-    .printer-line:hover { border-color: var(--accent2); }
-    .printer-line::before { content: '▶'; color: var(--accent); font-size: 0.6rem; }
-    .tech-badges { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
-    .tbadge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); transition: all 0.3s; }
-    .tbadge:hover { border-color: var(--accent); color: var(--accent); }
-    .founder-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 3rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; position: relative; overflow: hidden; }
-    .founder-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2)); }
-    .founder-img-wrap { position: relative; margin-bottom: 2rem; }
-    .founder-img { width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); filter: saturate(0.9); display: block; }
-    .founder-img-wrap::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 1px solid rgba(255,45,85,0.3); animation: pulse-ring 2.5s ease-out infinite; }
-    @keyframes pulse-ring { 0% { transform: scale(1); opacity:0.6; } 100% { transform: scale(1.2); opacity:0; } }
-    .founder-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; }
-    .founder-role { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-top: 0.3rem; }
-
-    /* CONTACT */
-    .contact-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 2rem; }
-    .contact-info { display: flex; flex-direction: column; gap: 1rem; }
-    .info-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2rem; }
-    .info-box-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.7rem; }
-    .info-box-val { font-size: 1rem; font-weight: 600; color: var(--text); }
-    .info-box-sub { font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }
-    .contact-form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .fg { margin-bottom: 1.5rem; }
-    .fg label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
-    .fg input, .fg textarea, .fg select { width: 100%; padding: 0.9rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 0.95rem; transition: border-color 0.3s, background 0.3s; appearance: none; }
-    .fg input:focus, .fg textarea:focus, .fg select:focus { outline: none; border-color: var(--accent); background: rgba(255,45,85,0.04); }
-    .fg textarea { height: 130px; resize: vertical; }
-    .fg select option { background: #0a0a0f; }
-    .checkbox-row { display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 2rem; }
-    .checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
-    .checkbox-row label { font-size: 0.85rem; color: var(--muted); cursor: pointer; line-height: 1.5; }
-    .checkbox-row a { color: var(--accent); text-decoration: none; }
-    .checkbox-row a:hover { text-decoration: underline; }
-    .submit-btn { font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px; font-size: 1.1rem; width: 100%; padding: 1.1rem; background: var(--accent); color: #fff; border: none; border-radius: 3px; cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s; }
-    .submit-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); transform: translateX(-100%); transition: transform 0.5s; }
-    .submit-btn:hover::after { transform: translateX(100%); }
-    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
-
-    /* LEGAL */
-    .legal-box { max-width: 900px; margin: 2rem auto; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3rem; }
-    .legal-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); margin: 2.5rem 0 0.8rem; }
-    .legal-box h2:first-child { margin-top: 0; }
-    .legal-box h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin: 1.5rem 0 0.6rem; }
-    .legal-box p { color: var(--muted); line-height: 1.8; margin-bottom: 1rem; font-size: 0.95rem; }
-    .legal-box ul { color: var(--muted); line-height: 1.8; margin-bottom: 1rem; padding-left: 1.5rem; font-size: 0.95rem; }
-    .legal-box li { margin-bottom: 0.4rem; }
-    .legal-box a { color: var(--accent); text-decoration: none; cursor: pointer; }
-    .legal-box a:hover { text-decoration: underline; }
-    .legal-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
-
-    /* PAGE TITLES */
-    .pg-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
-    .pg-eyebrow::before { content:''; display:block; width:24px; height:1px; background:var(--accent); }
-    .pg-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem,7vw,6rem); letter-spacing: 2px; line-height: 1; margin-bottom: 1rem; }
-    .pg-title span { background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .pg-sub { color: var(--muted); font-size: 1rem; max-width: 500px; line-height: 1.7; }
-
-    /* FOOTER */
-    footer { margin-top: 8rem; padding: 2.5rem 0 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-    .footer-left { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-    .footer-mid { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
-    .footer-right { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-    .footer-right a { color: var(--muted); text-decoration: none; font-size: 1.2rem; transition: color 0.3s, transform 0.3s; cursor: pointer; }
-    .footer-right a:hover { color: var(--accent); transform: translateY(-3px); }
-    .footer-link { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); cursor: pointer; text-decoration: none; transition: color 0.3s; }
-    .footer-link:hover { color: var(--accent); }
-
-    /* LOADING */
-    #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.6s ease; }
-    .load-logo { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 6px; background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2rem; }
-    .load-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
-    .load-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 2px; animation: loadProg 1.2s cubic-bezier(.4,0,.2,1) forwards; }
-    @keyframes loadProg { from { width: 0%; } to { width: 100%; } }
-    .load-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 3px; color: var(--muted); margin-top: 0.8rem; }
-
-    /* REVEAL */
-    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(.23,1,.32,1), transform 0.7s cubic-bezier(.23,1,.32,1); }
-    .reveal.in { opacity:1; transform:translateY(0); }
-
-    /* GLITCH */
-    @keyframes glitch {
-      0%   { clip-path: inset(40% 0 61% 0); transform: translate(-2px,0) skew(0.5deg); }
-      20%  { clip-path: inset(92% 0 1% 0);  transform: translate(2px,0) skew(-0.5deg); }
-      40%  { clip-path: inset(43% 0 1% 0);  transform: translate(-2px,0) skew(0.5deg); }
-      60%  { clip-path: inset(25% 0 58% 0); transform: translate(2px,0) skew(-0.5deg); }
-      80%  { clip-path: inset(54% 0 7% 0);  transform: translate(-2px,0) skew(0.5deg); }
-      100% { clip-path: inset(58% 0 43% 0); transform: translate(2px,0) skew(-0.5deg); }
-    }
-    .logo-glitch { position: relative; }
-    .logo-glitch::before, .logo-glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; background: linear-gradient(90deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Bebas Neue', sans-serif; font-size: inherit; letter-spacing: inherit; }
-    .logo-glitch::before { left: 2px; text-shadow: -2px 0 var(--accent2); animation: glitch 2s infinite linear alternate-reverse; opacity: 0; }
-    .logo-glitch::after  { left: -2px; text-shadow: 2px 0 var(--accent); animation: glitch 3s infinite linear alternate; opacity: 0; }
-    .logo-glitch:hover::before, .logo-glitch:hover::after { opacity: 0.8; }
-
-    /* MOBILE */
-    @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      nav { padding: 0.8rem 1rem; flex-wrap: wrap; justify-content: center; gap: 0.5rem; top: 0.5rem; }
-      .logo { font-size: 1.5rem; margin-right: auto; }
-      .nav-links { gap: 1.2rem; }
-      .nav-links a { font-size: 0.7rem; }
-      .hero { min-height: 70vh; padding: 2rem 0 1rem; }
-      .hero-title { font-size: clamp(3rem, 12vw, 5rem); }
-      .hero-sub { font-size: 0.95rem; }
-      .hero-cta { flex-direction: column; }
-      .btn-main, .btn-ghost { width: 100%; text-align: center; }
-      .logo-slider-section { margin-top: 3rem; padding: 2rem 0; }
-      .stats-strip { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
-      .portfolio-grid { grid-template-columns: 1fr 1fr; }
-      .port-item.tall, .port-item.wide { grid-row: span 1; grid-column: span 1; }
-      .about-grid { grid-template-columns: 1fr; }
-      .about-block { padding: 2rem; }
-      .founder-card { padding: 2rem; }
-      .contact-layout { grid-template-columns: 1fr; }
-      .contact-form-box { padding: 2rem; }
-      .form-row { grid-template-columns: 1fr; }
-      .legal-box { padding: 2rem; }
-      footer { flex-direction: column; text-align: center; }
-      footer .footer-right { justify-content: center; }
-    }
-    @media (max-width: 480px) {
-      .portfolio-grid { grid-template-columns: 1fr; }
-      .pg-title { font-size: 3rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<title>KlamsiPrints – Bestellung</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+<div class="page-shell">
 
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="">
-  <div class="lightbox-info">
-    <div class="port-cat" id="lightbox-cat"></div>
-    <div class="port-name" id="lightbox-name"></div>
+  <div class="top-bar">
+    <button class="brand" id="logoBtn" type="button" aria-label="KlamsiPrints">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3 7l9 5 9-5M12 12v10" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        KlamsiPrints
+        <span class="brand-sub">3D-Druck Bestellung</span>
+      </span>
+    </button>
   </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-line"></div>
+      <div class="progress-fill" id="progressFill"></div>
+      <div class="progress-head" id="progressHead" style="left:0%">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="#FF8A3D"/>
+          <path d="M8 12l3 3 5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="progress-labels" id="progressLabels"></div>
+  </div>
+
+  <form id="orderForm" novalidate>
+
+    <!-- STEP 1: Produkte -->
+    <section class="step is-active" data-step="1">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 1 von 6</p>
+        <h2 class="step-title">Welche Produkte möchtest du bestellen?</h2>
+        <p class="step-desc">Wähle einfach aus, was du haben möchtest – Menge und Farbe legst du im nächsten Schritt fest.</p>
+      </div>
+      <div class="card">
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+      <p class="error-text" id="step1Error">Bitte wähle mindestens ein Produkt aus.</p>
+    </section>
+
+    <!-- STEP 2: Menge & Farbe -->
+    <section class="step" data-step="2">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 2 von 6</p>
+        <h2 class="step-title">Menge &amp; Farbe festlegen</h2>
+        <p class="step-desc">Jedes Stück kann seine eigene Farbe bekommen – praktisch, wenn du z.&nbsp;B. zwei Osterhasen in unterschiedlichen Farben möchtest.</p>
+      </div>
+      <div class="config-list" id="configList"></div>
+      <p class="error-text" id="step2Error">Bitte wähle für jedes Stück eine Farbe.</p>
+    </section>
+
+    <!-- STEP 3: Versand -->
+    <section class="step" data-step="3">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 3 von 6</p>
+        <h2 class="step-title">Versand</h2>
+        <p class="step-desc">Wähle, wie du deine Bestellung erhalten möchtest.</p>
+      </div>
+      <div class="option-list" id="shippingList"></div>
+    </section>
+
+    <!-- STEP 4: Bezahlung -->
+    <section class="step" data-step="4">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 4 von 6</p>
+        <h2 class="step-title">Bezahlung</h2>
+        <p class="step-desc">Wähle deine Zahlungsart.</p>
+      </div>
+      <div class="option-list" id="paymentList"></div>
+    </section>
+
+    <!-- STEP 5: Kontakt -->
+    <section class="step" data-step="5">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 5 von 6</p>
+        <h2 class="step-title">Deine Kontaktdaten</h2>
+        <p class="step-desc">Damit wir dich zur Abholung bzw. Bestätigung erreichen können.</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label for="custName">Name *</label>
+          <input type="text" id="custName" placeholder="Vor- und Nachname" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="custEmail">E-Mail *</label>
+          <input type="email" id="custEmail" placeholder="deine@email.at" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="custPhone">Telefon (optional)</label>
+          <input type="tel" id="custPhone" placeholder="+43 ..." autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="custNote">Anmerkung (optional)</label>
+          <textarea id="custNote" placeholder="Sonderwünsche, Liefertermin, etc."></textarea>
+        </div>
+      </div>
+      <p class="error-text" id="step5Error">Bitte fülle Name und E-Mail aus.</p>
+    </section>
+
+    <!-- STEP 6: Zusammenfassung -->
+    <section class="step" data-step="6">
+      <div class="step-head">
+        <p class="step-eyebrow">Schritt 6 von 6</p>
+        <h2 class="step-title">Zusammenfassung</h2>
+        <p class="step-desc">Bitte prüfe deine Bestellung, bevor du sie abschickst.</p>
+      </div>
+      <div class="card" id="summaryCard"></div>
+    </section>
+
+    <!-- STEP 7: Bestätigung -->
+    <section class="step" data-step="7">
+      <div class="card confirm-wrap">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 6L9 17l-5-5" stroke="#2FAE66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 class="step-title">Danke für deine Bestellung!</h2>
+        <p class="step-desc">Wir melden uns bei dir, sobald deine Drucke bereit sind.</p>
+        <div class="confirm-order-id" id="confirmOrderId">#000000</div>
+        <div class="nav-row" style="justify-content:center; margin-top:26px;">
+          <button type="button" class="btn btn-primary" id="restartBtn">Neue Bestellung starten</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="nav-row" id="navRow">
+      <button type="button" class="btn btn-ghost" id="backBtn">&larr; Zurück</button>
+      <div class="nav-spacer"></div>
+      <button type="button" class="btn btn-primary" id="nextBtn">Weiter &rarr;</button>
+      <button type="button" class="btn btn-accent" id="submitBtn" style="display:none;">Bestellung abschicken</button>
+    </div>
+
+  </form>
+
+  <div class="page-footer">
+    KlamsiPrints &middot; handgefertigte 3D-Drucke <button class="footer-dot" type="button" tabindex="-1">&middot;</button>
+  </div>
+
 </div>
 
-<div id="loading">
-  <div class="load-logo">KLAMSIPRINTS</div>
-  <div class="load-bar-wrap"><div class="load-bar"></div></div>
-  <div class="load-pct" id="load-pct">0%</div>
-</div>
-
-<div class="container">
-
-  <!-- NAV -->
-  <nav>
-    <div class="logo logo-glitch" data-text="KlamsiPrints" onclick="switchPage('home')">KlamsiPrints</div>
-    <div class="nav-links">
-      <a class="active" onclick="switchPage('home')" id="nav-home">Home</a>
-      <a onclick="switchPage('portfolio')" id="nav-portfolio">Portfolio</a>
-      <a onclick="switchPage('about')" id="nav-about">Über uns</a>
-      <a onclick="switchPage('contact')" id="nav-contact">Kontakt</a>
-      <a id="nav-impressum" style="display:none"></a>
-      <a id="nav-datenschutz" style="display:none"></a>
-      <a id="nav-agb" style="display:none"></a>
-    </div>
-  </nav>
-
-  <!-- HOME -->
-  <div id="home-page" class="page active-page">
-    <div class="hero">
-      <div class="hero-eyebrow reveal">3D Druck Service · Weiz, Österreich</div>
-      <h1 class="hero-title reveal">
-        <span class="line-1">Idee wird</span>
-        <span class="line-2">Realität</span>
-      </h1>
-      <p class="hero-sub reveal">
-        Verwandeln Sie Ihre Ideen in greifbare Objekte. Mit modernster 3D-Drucktechnologie und
-        persönlichem Design realisieren wir jedes Projekt – präzise, schnell, einzigartig.
-      </p>
-      <div class="hero-cta reveal">
-        <button class="btn-main" onclick="switchPage('contact')">Projekt starten →</button>
-        <button class="btn-ghost" onclick="switchPage('portfolio')">Portfolio ansehen</button>
-      </div>
-    </div>
-
-    <div class="stats-strip reveal" style="margin-top:4rem;">
-      <div class="stat-box"><div class="stat-num" data-count="50" data-suffix="+">0</div><div class="stat-lbl">Erfolgreiche Projekte</div></div>
-      <div class="stat-box"><div class="stat-num" data-count="24" data-suffix="h">0</div><div class="stat-lbl">Reaktionszeit</div></div>
-      <div class="stat-box"><div class="stat-num" data-count="99" data-suffix=",8%">0</div><div class="stat-lbl">Kundenzufriedenheit</div></div>
-    </div>
-
-    <div style="margin-top:6rem;">
-      <div class="section-label reveal">Was wir bieten</div>
-      <h2 class="section-title reveal">Services &<br><span>Stärken</span></h2>
-      <div class="features-grid reveal">
-        <div class="feature-card" onclick="switchPage('contact')">
-          <span class="feature-icon">⬡</span>
-          <div class="feature-num">01</div>
-          <h3 class="feature-title">Individuelles Design</h3>
-          <p class="feature-desc">Von der Skizze bis zum fertigen 3D-Modell. Wir designen Ihre Idee und machen sie druckbereit.</p>
-        </div>
-        <div class="feature-card" onclick="switchPage('contact')">
-          <span class="feature-icon">⏲︎</span>
-          <div class="feature-num">02</div>
-          <h3 class="feature-title">Schnelle Produktion</h3>
-          <p class="feature-desc">Bambu Lab Drucker für höchste Präzision und kurze Lieferzeiten. Ihr Objekt kommt schnell an.</p>
-        </div>
-        <div class="feature-card" onclick="switchPage('contact')">
-          <span class="feature-icon">◈</span>
-          <div class="feature-num">03</div>
-          <h3 class="feature-title">Premium PLA Material</h3>
-          <p class="feature-desc">Druck mit hochwertigem PLA – dem weltweit meistverwendeten Filament für langlebige Ergebnisse.</p>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:6rem; padding:4rem 3rem; background:var(--surface); border:1px solid var(--border); border-radius:4px; position:relative; overflow:hidden; text-align:center;" class="reveal">
-      <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%, rgba(255,45,85,0.12) 0%, transparent 70%);pointer-events:none;"></div>
-      <div class="section-label" style="justify-content:center; margin-bottom:1.5rem;">Bereit loszulegen?</div>
-      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);letter-spacing:3px;margin-bottom:1.5rem;">Ihr Projekt wartet</h2>
-      <p style="color:var(--muted);margin-bottom:2.5rem;max-width:450px;margin-left:auto;margin-right:auto;font-size:0.95rem;line-height:1.7;">Kontaktieren Sie uns jetzt. Innerhalb von 24 Stunden erhalten Sie eine persönliche Rückmeldung und ein individuelles Angebot.</p>
-      <button class="btn-main" onclick="switchPage('contact')">Jetzt anfragen →</button>
-    </div>
-  </div>
-
-  <!-- PORTFOLIO -->
-  <div id="portfolio-page" class="page">
-    <div class="pg-eyebrow">Unsere Arbeiten</div>
-    <h1 class="pg-title">Portfolio<br><span>Projekte</span></h1>
-    <p class="pg-sub" style="margin-bottom:2rem;">Ausgewählte Arbeiten – von personalisierten Geschenken bis hin zu Dekorationsobjekten und Spielerweiterungen.</p>
-
-    <!-- Filter Buttons -->
-    <div class="portfolio-filter">
-      <button class="filter-btn active" onclick="filterPortfolio('all', this)">Alle</button>
-      <button class="filter-btn" onclick="filterPortfolio('geschenke', this)">Geschenke</button>
-      <button class="filter-btn" onclick="filterPortfolio('dekoration', this)">Dekoration</button>
-      <button class="filter-btn" onclick="filterPortfolio('gaming', this)">Gaming</button>
-    </div>
-
-    <!-- Portfolio Grid — füge einfach weitere port-item divs hinzu -->
-    <!-- Klassen: normal = 1x1, .tall = 1x2 (hoch), .wide = 2x1 (breit) -->
-    <div class="portfolio-grid" id="portfolio-grid">
-      <div class="port-item wide" data-cat="dekoration" onclick="openLightbox('./img/produkte/HasePflanze.webp','Dekoration','Hasen')">
-        <img src="./img/produkte/HasePflanze.webp" loading="lazy" alt="Hasen">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hasen</div></div>
-        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
-      </div>
-
-      <div class="port-item tall" data-cat="dekoration" onclick="openLightbox('./img/produkte/HuhnFull.webp','Dekoration','Hühner')">
-        <img src="./img/produkte/HuhnFull.webp" loading="lazy" alt="Hühner" style="object-position: center bottom;">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hühner</div></div>
-        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
-      </div>
-
-      <div class="port-item wide" data-cat="dekoration" onclick="openLightbox('./img/produkte/HuhnPflanze.webp','Dekoration','Hühner')">
-        <img src="./img/produkte/HuhnPflanze.webp" loading="lazy" alt="Hühner">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Hühner</div></div>
-        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Hasen-Dekoration</div><p class="port-desc">Beschreibung</p></div>
-      </div>
-
-      <div class="port-item" data-cat="geschenke" onclick="openLightbox('img/besteMAMA.jpg','Geschenke','Personalisierte Schilder')">
-        <img src="img/besteMAMA.webp" loading="lazy" alt="BesteMama">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Geschenke</div><div class="port-name">Personalisierte Schilder</div></div>
-        <div class="port-overlay"><div class="port-cat">Geschenke</div><div class="port-name">Personalisierte Schilder</div><p class="port-desc">3D-gedruckte Schilder als perfektes individuelles Geschenk für jeden Anlass.</p></div>
-      </div>
-
-      <div class="port-item" data-cat="dekoration" onclick="openLightbox('img/sternenkueche.jpg','Dekoration','Wohndekor Aufsteller')">
-        <img src="img/sternenkueche.webp" loading="lazy" alt="Sternenküche">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Dekoration</div><div class="port-name">Wohndekor</div></div>
-        <div class="port-overlay"><div class="port-cat">Dekoration</div><div class="port-name">Wohndekor Aufsteller</div><p class="port-desc">Elegante Aufsteller, die Ihr Zuhause mit einem modernen Touch verschönern.</p></div>
-      </div>
-
-      <div class="port-item" data-cat="gaming" onclick="openLightbox('img/IMG_4792.jpg','Gaming','Brettspiel-Erweiterungen')">
-        <img src="img/IMG_4792.webp" loading="lazy" alt="Spielverbesserungen">
-        <div class="port-zoom"><i class="fas fa-expand"></i></div>
-        <div class="port-always"><div class="port-cat">Gaming</div><div class="port-name">Brettspiel-Extras</div></div>
-        <div class="port-overlay"><div class="port-cat">Gaming</div><div class="port-name">Brettspiel-Erweiterungen</div><p class="port-desc">Maßgefertigte Organizer, Token und Erweiterungen für Ihr Lieblingsspiel.</p></div>
-      </div>
-
-      <!-- Weitere Bilder hier einfügen — Beispiele: -->
-      
-
-    </div>
-
-    <div style="margin-top:4rem; text-align:center;" class="reveal">
-      <p style="color:var(--muted); font-size:0.9rem; font-family:'JetBrains Mono',monospace; letter-spacing:2px; text-transform:uppercase; margin-bottom:1.5rem;">Ihr Projekt dabei?</p>
-      <button class="btn-main" onclick="switchPage('contact')">Jetzt anfragen →</button>
-    </div>
-  </div>
-
-  <!-- ABOUT -->
-  <div id="about-page" class="page">
-    <div class="pg-eyebrow">Wer wir sind</div>
-    <h1 class="pg-title">Über<br><span>KlamsiPrints</span></h1>
-    <p class="pg-sub" style="margin-bottom:3rem;">Leidenschaft für 3D-Druck seit April 2025.</p>
-    <div class="about-grid">
-      <div>
-        <div class="about-block reveal">
-          <h2>Unsere Geschichte</h2>
-          <p>KlamsiPrints entstand aus echter Begeisterung für moderne Fertigungstechnologien. Was als Hobby begann, entwickelte sich schnell zu einem professionellen Service.</p>
-          <p>Wir glauben: Jede Idee verdient es, verwirklicht zu werden. Mit Know-how und Leidenschaft für 3D-Druck helfen wir Ihnen, Visionen greifbar zu machen.</p>
-          <h2 style="margin-top:2rem;">Unsere Philosophie</h2>
-          <p>Qualität, Präzision und Kundenzufriedenheit sind unsere Priorität. Wir beraten ehrlich, finden die beste Lösung und produzieren mit höchster Sorgfalt.</p>
-          <div class="tech-badges">
-            <span class="tbadge">PLA Druck</span><span class="tbadge">CAD Design</span><span class="tbadge">3D Modellierung</span><span class="tbadge">Bambu Lab</span>
-          </div>
-        </div>
-        <div class="about-block reveal" style="margin-top:1.5rem;">
-          <h2>Unsere Drucker</h2>
-          <div class="printers">
-            <div class="printer-line">Bambu Lab P2S</div>
-            <div class="printer-line">Bambu Lab A1</div>
-          </div>
-        </div>
-      </div>
-      <div class="founder-card reveal">
-        <div class="founder-img-wrap"><img src="img/luca.webp" loading="lazy" alt="Luca Klaminger" class="founder-img"></div>
-        <div class="founder-name">Luca Klaminger</div>
-        <div class="founder-role">Gründer & 3D-Experte</div>
-        <div style="width:40px;height:1px;background:var(--border);margin:1.5rem auto;"></div>
-        <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;max-width:300px;">Technikbegeistert, kreativ, und immer auf der Suche nach der besten Lösung für jedes Projekt.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONTACT -->
-  <div id="contact-page" class="page">
-    <div class="pg-eyebrow">Schreib uns</div>
-    <h1 class="pg-title">Kontakt &<br><span>Anfrage</span></h1>
-    <div class="contact-layout">
-      <div class="contact-info reveal">
-        <div class="info-box"><div class="info-box-label">Response Time</div><div class="info-box-val">&lt; 24 Stunden</div><div class="info-box-sub">Wir melden uns per E-Mail</div></div>
-        <div class="info-box"><div class="info-box-label">E-Mail</div><div class="info-box-val">klamsiprints@gmail.com</div></div>
-        <div class="info-box"><div class="info-box-label">Standort</div><div class="info-box-val">Weiz, Steiermark</div><div class="info-box-sub">Österreich</div></div>
-        <div class="info-box"><div class="info-box-label">Social</div><div class="info-box-val"><a href="https://www.instagram.com/klamsimedia/" target="_blank" style="color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:0.5rem;"><i class="fab fa-instagram"></i> @klamsimedia</a></div></div>
-      </div>
-      <div class="contact-form-box reveal">
-        <form action="https://formspree.io/f/xgvkjzvr" method="POST">
-          <div class="form-row">
-            <div class="fg"><label>Name *</label><input type="text" name="name" placeholder="Ihr vollständiger Name" required></div>
-            <div class="fg"><label>E-Mail *</label><input type="email" name="email" placeholder="ihre@email.at" required></div>
-          </div>
-          <div class="fg">
-            <label>Gewünschter Service</label>
-            <select name="service"><option value="3D-Druckauftrag">3D-Druckauftrag</option><option value="Beratung">Beratung</option><option value="Sonstiges">Sonstiges</option></select>
-          </div>
-          <div class="fg"><label>Nachricht *</label><textarea name="message" placeholder="Beschreiben Sie Ihr Projekt – Material, Größe, Stückzahl, besondere Wünsche..." required></textarea></div>
-          <div class="checkbox-row">
-            <input type="checkbox" id="consent" name="consent" required>
-            <label for="consent">Ich stimme der <a onclick="switchPage('datenschutz')">Datenschutzerklärung</a> zu und akzeptiere die <a onclick="switchPage('agb')">AGB</a> *</label>
-          </div>
-          <button type="submit" class="submit-btn">Anfrage absenden →</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- IMPRESSUM -->
-  <div id="impressum-page" class="page">
-    <div class="pg-eyebrow">Rechtliches</div>
-    <h1 class="pg-title"><span>Impressum</span></h1>
-    <div class="legal-box">
-      <h2>Angaben gemäß § 5 ECG (Österreich)</h2>
-      <p>Luca Klaminger<br>KlamsiPrints<br>8160 Weiz<br>Österreich</p>
-      <h2>Kontakt</h2>
-      <p>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
-      <h2>Verantwortlich für den Inhalt</h2>
-      <p>Luca Klaminger</p>
-      <h2>Haftungsausschluss</h2>
-      <p>Die Inhalte dieser Website wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>
-    </div>
-  </div>
-
-  <!-- DATENSCHUTZ -->
-  <div id="datenschutz-page" class="page">
-    <div class="pg-eyebrow">Rechtliches</div>
-    <h1 class="pg-title"><span>Datenschutz</span>erklärung</h1>
-    <div class="legal-box">
-      <h2>1. Verantwortlicher</h2>
-      <p>Luca Klaminger · KlamsiPrints · 8160 Weiz · Österreich<br>E-Mail: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
-      <div class="legal-divider"></div>
-      <h2>2. Welche Daten wir erheben</h2>
-      <p>Wenn Sie unser Kontaktformular nutzen, erheben wir folgende personenbezogene Daten:</p>
-      <ul><li>Vor- und Nachname</li><li>E-Mail-Adresse</li><li>Nachrichteninhalt (Projektbeschreibung)</li><li>Gewählter Service</li></ul>
-      <p>Beim bloßen Besuch unserer Website werden keine personenbezogenen Daten aktiv gespeichert. Es werden keine Cookies gesetzt und kein Tracking durchgeführt.</p>
-      <div class="legal-divider"></div>
-      <h2>3. Zweck der Verarbeitung</h2>
-      <p>Ihre Daten werden ausschließlich verwendet, um Ihre Anfrage zu bearbeiten und Ihnen ein individuelles Angebot zu unterbreiten.</p>
-      <div class="legal-divider"></div>
-      <h2>4. Rechtsgrundlage</h2>
-      <p>Die Verarbeitung Ihrer Daten erfolgt auf Basis von Art. 6 Abs. 1 lit. b DSGVO (Vertragsanbahnung) sowie Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch Absenden des Formulars).</p>
-      <div class="legal-divider"></div>
-      <h2>5. Drittanbieter: Formspree</h2>
-      <p>Wir verwenden den Dienst <strong>Formspree</strong> (Formspree, Inc., USA) zur Verarbeitung von Kontaktformular-Einsendungen.</p>
-      <p>Datenschutzerklärung von Formspree: <a href="https://formspree.io/legal/privacy-policy" target="_blank">formspree.io/legal/privacy-policy</a></p>
-      <div class="legal-divider"></div>
-      <h2>6. Drittanbieter: Google Fonts</h2>
-      <p>Diese Website verwendet Google Fonts (Google LLC, USA). Beim Laden der Seite wird eine Verbindung zu Google-Servern hergestellt, wobei Ihre IP-Adresse übermittelt werden kann.</p>
-      <div class="legal-divider"></div>
-      <h2>7. Speicherdauer</h2>
-      <p>Ihre Daten werden maximal 2 Jahre gespeichert, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
-      <div class="legal-divider"></div>
-      <h2>8. Ihre Rechte</h2>
-      <ul>
-        <li><strong>Auskunft</strong> (Art. 15)</li><li><strong>Berichtigung</strong> (Art. 16)</li>
-        <li><strong>Löschung</strong> (Art. 17)</li><li><strong>Einschränkung</strong> (Art. 18)</li>
-        <li><strong>Widerspruch</strong> (Art. 21)</li><li><strong>Datenübertragbarkeit</strong> (Art. 20)</li>
-      </ul>
-      <p>Kontakt: <a href="mailto:klamsiprints@gmail.com">klamsiprints@gmail.com</a></p>
-      <div class="legal-divider"></div>
-      <h2>9. Beschwerderecht</h2>
-      <p>Österreichische Datenschutzbehörde · Barichgasse 40–42 · 1030 Wien · <a href="https://www.dsb.gv.at" target="_blank">www.dsb.gv.at</a></p>
-      <div class="legal-divider"></div>
-      <h2>10. Aktualität</h2>
-      <p>Stand: März 2026.</p>
-    </div>
-  </div>
-
-  <!-- AGB -->
-  <div id="agb-page" class="page">
-    <div class="pg-eyebrow">Rechtliches</div>
-    <h1 class="pg-title">Allgemeine<br><span>Geschäftsbedingungen</span></h1>
-    <div class="legal-box">
-      <h2>1. Geltungsbereich</h2>
-      <p>Diese AGB gelten für alle Verträge zwischen KlamsiPrints (Inhaber: Luca Klaminger, 8160 Weiz, Österreich) und dem Kunden über 3D-Druck-Dienstleistungen und damit verbundene Leistungen.</p>
-      <div class="legal-divider"></div>
-      <h2>2. Vertragsschluss</h2>
-      <p>Ein Vertrag kommt zustande, sobald KlamsiPrints die Anfrage schriftlich per E-Mail bestätigt und ein individuelles Angebot angenommen wird.</p>
-      <div class="legal-divider"></div>
-      <h2>3. Leistungsumfang</h2>
-      <h3>3.1 3D-Druckaufträge</h3>
-      <p>KlamsiPrints druckt vom Kunden bereitgestellte oder gemeinsam erarbeitete 3D-Modelle in der vereinbarten Qualität, Farbe und Stückzahl.</p>
-      <h3>3.2 Designleistungen</h3>
-      <p>Auf Wunsch erstellt KlamsiPrints 3D-Modelle nach Vorgabe des Kunden.</p>
-      <h3>3.3 Materialien</h3>
-      <p>Es wird ausschließlich hochwertiges PLA-Filament verwendet, sofern nicht ausdrücklich ein anderes Material vereinbart wird.</p>
-      <div class="legal-divider"></div>
-      <h2>4. Preise und Zahlung</h2>
-      <p>Alle Preise werden individuell kalkuliert und im Angebot angegeben. Bei größeren Aufträgen kann eine Anzahlung von bis zu 50 % vereinbart werden.</p>
-      <div class="legal-divider"></div>
-      <h2>5. Lieferung</h2>
-      <p>Lieferzeiten sind Richtwerte. KlamsiPrints haftet nicht für Verzögerungen durch höhere Gewalt oder unvorhergesehene technische Probleme.</p>
-      <div class="legal-divider"></div>
-      <h2>6. Eigentum an Dateien und Modellen</h2>
-      <p>Vom Kunden bereitgestellte Dateien verbleiben in dessen Eigentum. Für Urheberrechtsverletzungen durch bereitgestellte Dateien haftet ausschließlich der Kunde.</p>
-      <div class="legal-divider"></div>
-      <h2>7. Gewährleistung und Haftung</h2>
-      <p>Offensichtliche Mängel sind innerhalb von 14 Tagen nach Erhalt zu melden. Die Haftung beschränkt sich auf Vorsatz und grobe Fahrlässigkeit.</p>
-      <div class="legal-divider"></div>
-      <h2>8. Widerrufsrecht</h2>
-      <p>Gemäß § 18 Abs. 1 Z 3 FAGG besteht kein Widerrufsrecht für individuell angefertigte Waren.</p>
-      <div class="legal-divider"></div>
-      <h2>9. Datenschutz</h2>
-      <p>Die Verarbeitung personenbezogener Daten erfolgt gemäß unserer <a onclick="switchPage('datenschutz')">Datenschutzerklärung</a>.</p>
-      <div class="legal-divider"></div>
-      <h2>10. Anwendbares Recht & Gerichtsstand</h2>
-      <p>Es gilt österreichisches Recht. Gerichtsstand ist Weiz, Österreich.</p>
-      <div class="legal-divider"></div>
-      <h2>11. Salvatorische Klausel</h2>
-      <p>Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen unberührt.</p>
-      <p style="margin-top:2rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:1px;color:rgba(240,240,240,0.3);">Stand: März 2026 · KlamsiPrints, Luca Klaminger</p>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-left">© 2026 KlamsiPrints. Alle Rechte vorbehalten.</div>
-    <div class="footer-mid" onclick="switchPage('home')" style="cursor:pointer;">KP</div>
-    <div class="footer-right">
-      <a onclick="switchPage('impressum')" class="footer-link">Impressum</a>
-      <a onclick="switchPage('datenschutz')" class="footer-link">Datenschutz</a>
-      <a onclick="switchPage('agb')" class="footer-link">AGB</a>
-      <a href="https://www.instagram.com/klamsimedia/" target="_blank"><i class="fab fa-instagram"></i></a>
-      <a onclick="switchPage('contact')"><i class="fas fa-envelope"></i></a>
-    </div>
-  </footer>
-</div>
-
-<script>
-// LOADING
-let pct = 0;
-const pctEl = document.getElementById('load-pct');
-const iv = setInterval(() => {
-  pct = Math.min(pct + Math.random() * 15, 99);
-  pctEl.textContent = Math.floor(pct) + '%';
-}, 80);
-window.addEventListener('load', () => {
-  clearInterval(iv);
-  pctEl.textContent = '100%';
-  setTimeout(() => {
-    const l = document.getElementById('loading');
-    l.style.opacity = '0';
-    setTimeout(() => l.style.display = 'none', 600);
-    initReveal();
-  }, 400);
-});
-
-// PARTICLES
-(function() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  class Particle {
-    constructor() { this.reset(); }
-    reset() {
-      this.x = Math.random() * W; this.y = Math.random() * H;
-      this.r = Math.random() * 1.2 + 0.3;
-      this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4;
-      this.alpha = Math.random() * 0.5 + 0.1;
-      this.color = Math.random() > 0.5 ? '255,45,85' : '0,245,212';
-    }
-    update() {
-      this.x += this.vx; this.y += this.vy;
-      if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
-    }
-    draw() {
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(${this.color},${this.alpha})`; ctx.fill();
-    }
-  }
-  for (let i = 0; i < 120; i++) particles.push(new Particle());
-  function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i+1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < 100) {
-          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(255,45,85,${0.04 * (1 - d/100)})`; ctx.lineWidth = 0.5; ctx.stroke();
-        }
-      }
-    }
-  }
-  function loop() { ctx.clearRect(0,0,W,H); particles.forEach(p => { p.update(); p.draw(); }); drawConnections(); requestAnimationFrame(loop); }
-  loop();
-})();
-
-// PAGE SWITCHING
-function switchPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  document.getElementById(name + '-page').classList.add('active-page');
-  const navEl = document.getElementById('nav-' + name);
-  if (navEl) navEl.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  setTimeout(initReveal, 100);
-}
-
-// SCROLL REVEAL
-function initReveal() {
-  const els = document.querySelectorAll('.reveal');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-  els.forEach(el => { el.classList.remove('in'); obs.observe(el); });
-  setTimeout(() => {
-    document.querySelectorAll('.reveal').forEach(el => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.95) el.classList.add('in');
-    });
-  }, 50);
-}
-
-// COUNT UP — alle gleichzeitig fertig, startet erst wenn sichtbar
-function countUp() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      observer.unobserve(entry.target);
-      const els = document.querySelectorAll('[data-count]');
-      const duration = 3000;
-      els.forEach(el => {
-        const target = parseInt(el.dataset.count);
-        const suffix = el.dataset.suffix || '';
-        const startTime = performance.now();
-        function tick(now) {
-          const elapsed = now - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const ease = 1 - Math.pow(1 - progress, 3);
-          el.textContent = Math.floor(ease * target) + suffix;
-          if (progress < 1) requestAnimationFrame(tick);
-          else el.textContent = target + suffix;
-        }
-        requestAnimationFrame(tick);
-      });
-    });
-  }, { threshold: 0.3 });
-  const strip = document.querySelector('.stats-strip');
-  if (strip) observer.observe(strip);
-}
-countUp();
-
-// PORTFOLIO FILTER
-function filterPortfolio(cat, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.port-item').forEach(item => {
-    if (cat === 'all' || item.dataset.cat === cat) {
-      item.style.display = '';
-      item.style.animation = 'pageIn 0.4s cubic-bezier(.23,1,.32,1) both';
-    } else {
-      item.style.display = 'none';
-    }
-  });
-}
-
-// LIGHTBOX
-function openLightbox(src, cat, name) {
-  document.getElementById('lightbox-img').src = src;
-  document.getElementById('lightbox-cat').textContent = cat;
-  document.getElementById('lightbox-name').textContent = name;
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-</script>
+<script src="products.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
