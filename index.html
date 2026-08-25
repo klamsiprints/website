@@ -44,14 +44,25 @@
 
     <!-- STEP 1: Produkte -->
     <section class="step is-active" data-step="1">
+      <section class="customer-info-grid" aria-label="Aktuelles und Hilfe">
+        <article class="info-panel news-panel">
+          <p class="panel-kicker">Neuigkeiten</p>
+          <h2>Frisch aus der Druckerei</h2>
+          <p>Wir arbeiten gerade an neuen saisonalen Lieblingsstücken. Der Herbst-Katalog folgt bald.</p>
+          <span class="news-date">25. August 2026</span>
+        </article>
+        <article class="info-panel help-panel">
+          <p class="panel-kicker">Gut zu wissen</p>
+          <h2>Etwas ändern oder stornieren?</h2>
+          <p>Schreib uns einfach an <a href="mailto:KlamsiPrints@gmail.com">KlamsiPrints@gmail.com</a>. Halte am besten deine Bestellnummer bereit.</p>
+        </article>
+      </section>
       <div class="step-head">
         <p class="step-eyebrow">Schritt 1 von 6</p>
         <h2 class="step-title">Welche Produkte möchtest du bestellen?</h2>
-        <p class="step-desc">Wähle einfach aus, was du haben möchtest – Menge und Farbe legst du im nächsten Schritt fest.</p>
+        <p class="step-desc">Wähle einfach aus, was du haben möchtest. Menge und Farbe legst du im nächsten Schritt fest.</p>
       </div>
-      <div class="card">
-        <div class="product-grid" id="productGrid"></div>
-      </div>
+      <div class="card" id="productCatalog"></div>
       <p class="error-text" id="step1Error">Bitte wähle mindestens ein Produkt aus.</p>
     </section>
 
@@ -149,6 +160,11 @@
     </div>
 
   </form>
+
+  <div class="image-modal" id="imageModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Produktbild vergrößert">
+    <button class="image-modal-close" id="imageModalClose" type="button" aria-label="Bild schließen">&times;</button>
+    <img id="imageModalImage" src="" alt="">
+  </div>
 
   <div class="page-footer">
     KlamsiPrints &middot; handgefertigte 3D-Drucke <button class="footer-dot" type="button" tabindex="-1">&middot;</button>

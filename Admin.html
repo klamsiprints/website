@@ -35,6 +35,9 @@
   .order-dot-ready{ background: #2FAE66; }
   .is-complete td{ opacity: .62; }
   .is-complete td:first-child{ text-decoration: line-through; }
+  .order-delete{ width:34px; height:34px; padding:0; display:inline-grid; place-items:center; border:1px solid #F0C8C5; border-radius:var(--radius-sm); background:#FFF6F5; color:var(--danger); cursor:pointer; }
+  .order-delete:hover{ background:#FDE8E6; }
+  .order-delete svg{ width:17px; height:17px; }
 </style>
 </head>
 <body>
@@ -103,6 +106,7 @@
             <th>Gesamt</th>
             <th>Status</th>
             <th>Erledigt</th>
+            <th aria-label="Aktionen"></th>
           </tr>
         </thead>
         <tbody id="ordersBody"></tbody>
@@ -152,6 +156,10 @@
     return JSON.parse(localStorage.getItem('klamsiprints_orders') || '[]');
   }
 
+  function getDeletedOrderIds(){
+    return new Set(JSON.parse(localStorage.getItem('klamsiprints_deleted_orders') || '[]'));
+  }
+
   function saveOrders(orders){
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
   }
@@ -182,8 +190,10 @@
       cleanup();
       try {
         if (!data || !data.ok || !Array.isArray(data.orders)) throw new Error('Ungültige Antwort');
+        const deletedOrderIds = getDeletedOrderIds();
         const localOrders = getOrders();
         const remoteById = new Map(data.orders.map(order => [order.id, order]));
+        deletedOrderIds.forEach(id => remoteById.delete(id));
         localOrders.forEach(order => remoteById.set(order.id, { ...remoteById.get(order.id), ...order }));
         saveOrders(Array.from(remoteById.values()));
         refresh();
@@ -244,6 +254,7 @@
             </select>
           </td>
           <td><input class="order-complete" type="checkbox" data-order-id="${o.id}" ${o.completed ? 'checked' : ''} aria-label="Bestellung ${o.id} erledigt"></td>
+          <td><button class="order-delete" type="button" data-delete-order-id="${o.id}" aria-label="Bestellung ${o.id} löschen" title="Bestellung löschen"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7l1-3h4l1 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
         </tr>
       `;
     }).join('');
@@ -255,6 +266,17 @@
     if (!order) return;
     Object.assign(order, changes);
     saveOrders(orders);
+    refresh();
+  }
+
+  function deleteOrder(orderId){
+    if (!confirm(`Bestellung ${orderId} wirklich löschen?`)) return;
+    const deleted = Array.from(getDeletedOrderIds());
+    if (!deleted.includes(orderId)) deleted.push(orderId);
+    localStorage.setItem('klamsiprints_deleted_orders', JSON.stringify(deleted));
+    saveOrders(getOrders().filter(order => order.id !== orderId));
+    const sheetUrl = getSheetUrl();
+    if (sheetUrl) fetch(sheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: orderId }) }).catch(() => {});
     refresh();
   }
 
@@ -332,8 +354,14 @@
   el('clearBtn').addEventListener('click', () => {
     if (confirm('Wirklich alle Bestellungen unwiderruflich löschen?')){
       localStorage.removeItem('klamsiprints_orders');
+      localStorage.removeItem('klamsiprints_deleted_orders');
       refresh();
     }
+  });
+
+  el('ordersBody').addEventListener('click', event => {
+    const button = event.target.closest('[data-delete-order-id]');
+    if (button) deleteOrder(button.dataset.deleteOrderId);
   });
 
   el('ordersBody').addEventListener('change', event => {

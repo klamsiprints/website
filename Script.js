@@ -2,7 +2,7 @@
   "use strict";
 
   const TOTAL_STEPS = 7; // step 7 = Bestätigung (kein Nav)
-  const STEP_LABELS = ["Produkte", "Menge & Farbe", "Versand", "Bezahlung", "Kontakt", "Übersicht"];
+  const STEP_LABELS = ["Produkte", "Menge", "Versand", "Zahlung", "Kontakt", "Übersicht"];
 
   let currentStep = 1;
   // selection: { [productId]: { qty: number, colors: string[], sizes?: string[] } }
@@ -16,9 +16,16 @@
 
   // ---------------- Render: Step 1 – Produktliste ----------------
   function renderProducts(){
-    const grid = el('productGrid');
-    grid.innerHTML = "";
-    PRODUCTS.forEach(p => {
+    const catalog = el('productCatalog');
+    catalog.innerHTML = "";
+    const categories = [...new Set(PRODUCTS.map(p => p.category || "Produkte"))];
+    categories.forEach(category => {
+      const section = document.createElement('section');
+      section.className = "catalog-section" + (category === "Besondere Stücke" ? " catalog-special" : "");
+      section.innerHTML = `<div class="catalog-heading"><h3>${category}</h3><span>${PRODUCTS.filter(p => (p.category || "Produkte") === category).length} Artikel</span></div><div class="product-grid"></div>`;
+      catalog.appendChild(section);
+      const grid = section.querySelector('.product-grid');
+      PRODUCTS.filter(p => (p.category || "Produkte") === category).forEach(p => {
       const checked = !!selection[p.id];
       const item = document.createElement('div');
       item.className = "product-item" + (checked ? " is-checked" : "");
@@ -41,11 +48,37 @@
       `;
       const toggle = () => toggleProduct(p.id);
       item.addEventListener('click', toggle);
+      const productImage = item.querySelector('.product-thumb img');
+      if (productImage){
+        productImage.addEventListener('click', event => {
+          event.stopPropagation();
+          openImage(productImage.src, productImage.alt);
+        });
+      }
       item.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
       });
-      grid.appendChild(item);
+        grid.appendChild(item);
+      });
     });
+    const comingSoon = document.createElement('div');
+    comingSoon.className = "catalog-coming-soon";
+    comingSoon.innerHTML = `<div><p class="panel-kicker">Demnächst</p><h3>Herbst-Katalog</h3><p>Neue saisonale Designs sind bald hier. Schau gerne wieder vorbei.</p></div><span class="badge badge-soon">Folgt bald</span>`;
+    catalog.appendChild(comingSoon);
+  }
+
+  function openImage(src, alt){
+    el('imageModalImage').src = src;
+    el('imageModalImage').alt = alt;
+    el('imageModal').classList.add('is-open');
+    el('imageModal').setAttribute('aria-hidden', 'false');
+    el('imageModalClose').focus();
+  }
+
+  function closeImage(){
+    el('imageModal').classList.remove('is-open');
+    el('imageModal').setAttribute('aria-hidden', 'true');
+    el('imageModalImage').src = '';
   }
 
   function toggleProduct(id){
@@ -455,6 +488,13 @@
     showStep(7);
   });
   el('restartBtn').addEventListener('click', resetForm);
+  el('imageModalClose').addEventListener('click', closeImage);
+  el('imageModal').addEventListener('click', event => {
+    if (event.target === el('imageModal')) closeImage();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeImage();
+  });
   el('orderForm').addEventListener('submit', (e) => e.preventDefault());
 
   // ---------------- Init ----------------

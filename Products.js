@@ -62,13 +62,13 @@ const ICONS = {
 };
 
 const PRODUCTS = [
-  { id: "osterhase-klein",  name: "Osterhase (Klein)",        desc: "Dekofigur, die dein Zuhause verschönert",  price: 3.5,  icon: ICONS.bunny, img: "img/Hase.webp" },
-  { id: "osterhase-mittel", name: "Osterhase (Mittel)", desc: "Mittlere Dekofigur für dein Zuhause", price: 4.5, icon: ICONS.bunny, img: "img/HasePflanze.webp" },
-  { id: "osterhase-gross", name: "Osterhase (Groß)", desc: "Große Dekofigur für dein Zuhause", price: 5.5, icon: ICONS.bunny, img: "img/Hase.webp" },
-  { id: "schilder", name: "Personalisierte Schilder",         desc: "Wunschtext eingeben, Design wird danach abgesprochen", price: 14,  icon: ICONS.phoneHolder, img: "img/besteMAMA.webp" },
-  { id: "huhn-klein",        name: "Huhn (Klein)",              desc: "Dekofigur, die dein Zuhause verschönert",           price: 3.5, icon: ICONS.vase, img: "img/HuhnFull.webp" },
-  { id: "huhn-mittel", name: "Huhn (Mittel)", desc: "Mittlere Dekofigur für dein Zuhause", price: 4.5, icon: ICONS.vase, img: "img/HuhnPflanze.webp" },
-  { id: "huhn-gross", name: "Huhn (Groß)", desc: "Große Dekofigur für dein Zuhause", price: 5.5, icon: ICONS.vase, img: "img/HuhnFull.webp" },
-  { id: "hitster", name: "Hitster-Tower",       desc: "Perfekte für den Spieleabend",   price: 12.0,  icon: ICONS.keychain, img: "img/Hitster-Tower.webp" },
+  { id: "osterhase-klein",  name: "Osterhase (Klein)",        desc: "Dekofigur, die dein Zuhause verschönert",  price: 3.5, category: "Frühling", icon: ICONS.bunny, img: "img/Hase.webp" },
+  { id: "osterhase-mittel", name: "Osterhase (Mittel)", desc: "Mittlere Dekofigur für dein Zuhause", price: 4.5, category: "Frühling", icon: ICONS.bunny, img: "img/HasePflanze.webp" },
+  { id: "osterhase-gross", name: "Osterhase (Groß)", desc: "Große Dekofigur für dein Zuhause", price: 5.5, category: "Frühling", icon: ICONS.bunny, img: "img/Hase.webp" },
+  { id: "schilder", name: "Personalisierte Schilder",         desc: "Wunschtext eingeben, Design wird danach abgesprochen", price: 14, category: "Besondere Stücke", icon: ICONS.phoneHolder, img: "img/besteMAMA.webp" },
+  { id: "huhn-klein",        name: "Huhn (Klein)",              desc: "Dekofigur, die dein Zuhause verschönert",           price: 3.5, category: "Frühling", icon: ICONS.vase, img: "img/HuhnFull.webp" },
+  { id: "huhn-mittel", name: "Huhn (Mittel)", desc: "Mittlere Dekofigur für dein Zuhause", price: 4.5, category: "Frühling", icon: ICONS.vase, img: "img/HuhnPflanze.webp" },
+  { id: "huhn-gross", name: "Huhn (Groß)", desc: "Große Dekofigur für dein Zuhause", price: 5.5, category: "Frühling", icon: ICONS.vase, img: "img/HuhnFull.webp" },
+  { id: "hitster", name: "Hitster-Tower",       desc: "Perfekte für den Spieleabend",   price: 12.0, category: "Besondere Stücke", icon: ICONS.keychain, img: "img/Hitster-Tower.webp" },
   
 ];

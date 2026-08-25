@@ -3,6 +3,19 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
+    if (data.action === "delete" && data.id) {
+      var values = sheet.getDataRange().getValues();
+      for (var row = values.length - 1; row >= 0; row--) {
+        if (String(values[row][0]) === String(data.id)) {
+          sheet.deleteRow(row + 1);
+          break;
+        }
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (sheet.getLastRow() === 0 || !sheet.getRange(1, 1).getValue()) {
       sheet.appendRow(["Bestell-Nr", "Datum", "Name", "E-Mail", "Telefon", "Produkte", "Versand", "Zahlung", "Gesamt", "Anmerkung"]);
     }
