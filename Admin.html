@@ -207,7 +207,7 @@
     el('statRow').innerHTML = `
       <div class="stat-card"><div class="n">${orders.length}</div><div class="l">Bestellungen</div></div>
       <div class="stat-card"><div class="n">${fmt(total)}</div><div class="l">Umsatz gesamt</div></div>
-      <div class="stat-card"><div class="n">${orders.filter(o=>o.shipping==='abholung').length}</div><div class="l">Abholungen</div></div>
+      <div class="stat-card"><div class="n">${orders.filter(o=>o.shipping==='abholung' && o.completed).length}</div><div class="l">Abholungen</div></div>
     `;
   }
 

@@ -6,8 +6,7 @@
 // ---------------------------------------------------------------
 
 const COLOR_OPTIONS = [
-  "Weiß", "Schwarz", "Rot", "Blau", "Orange",
-  "Grün", "Gelb", "Pink", "Silber", "Gold", "Transparent"
+  "Schwarz", "Weiß", "Hellbraun (Holz-Farbe)", "Braun", "Dunkelbraun", "Creme-Weiß"
 ];
 const SIZE_OPTIONS = ["Klein", "Mittel", "Groß"];
 const SIZE_PRODUCT_IDS = ["osterhase", "huhn"];
