@@ -60,7 +60,7 @@
       </div>
       <p class="error-text" id="pwError">Falsches Passwort.</p>
       <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%; justify-content:center; margin-top:6px;">Anmelden</button>
-      <p class="field-hint" style="margin-top:14px;"><a href="Index.html">&larr; zurück zur Bestellseite</a></p>
+      <p class="field-hint" style="margin-top:14px;"><a href="index.html">&larr; zurück zur Bestellseite</a></p>
     </div>
   </div>
 </div>
@@ -86,7 +86,7 @@
     <button class="btn btn-accent btn-sm" id="exportCsvBtn" type="button">CSV exportieren</button>
     <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Alle Bestellungen löschen</button>
     <div class="nav-spacer"></div>
-    <a class="btn btn-ghost btn-sm" href="Index.html">Zur Bestellseite</a>
+    <a class="btn btn-ghost btn-sm" href="index.html">Zur Bestellseite</a>
   </div>
 
   <div class="card" style="padding:0; overflow:hidden;">
@@ -118,7 +118,9 @@
     <p class="step-desc" style="margin-bottom:16px;">
       Trage hier die Web-App-URL deines Google Apps Scripts ein. Neue Bestellungen werden dann automatisch
       als Zeile in dein Google Sheet geschrieben. Der benoetigte Script-Code steht in
-      <strong>google-apps-script.gs</strong> im Projektordner.
+      <strong>google-apps-script.gs</strong> im Projektordner. Beim Veröffentlichen im Apps-Script-Editor
+      muss unter <strong>"Wer hat Zugriff"</strong> zwingend <strong>"Jeder"</strong> ausgewählt sein –
+      sonst zeigt Google eine Login-Seite statt Daten zurück und die Verbindung schlägt fehl.
       <span class="status-pill" id="sheetStatus">—</span>
     </p>
     <div class="field">
@@ -133,8 +135,15 @@
 (function(){
   "use strict";
   const ADMIN_PASSWORD_HASH = "d261aa3454b76eb8e8b2fd179bd1239532c00c1478983ac51dd351696e42e14a";
-  const SHEET_URL = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
+  const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
   const ORDER_STATUSES = ["in planung", "wird gedruckt", "abholbereit"];
+
+  function getSheetUrl(){
+    return localStorage.getItem('klamsiprints_sheet_url') || DEFAULT_SHEET_URL;
+  }
+  function setSheetUrl(url){
+    localStorage.setItem('klamsiprints_sheet_url', url);
+  }
 
   const el = id => document.getElementById(id);
   const fmt = n => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -147,13 +156,22 @@
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
   }
 
+  function setSheetStatus(text, ok){
+    el('sheetStatus').textContent = text;
+    el('sheetStatus').className = "status-pill " + (ok ? "status-ok" : "status-off");
+  }
+
   function syncRemoteOrders(){
+    const sheetUrl = getSheetUrl();
+    if (!sheetUrl){
+      setSheetStatus("Keine URL hinterlegt", false);
+      return;
+    }
     const callbackName = 'receiveOrders_' + Date.now();
     const script = document.createElement('script');
     const timeout = setTimeout(() => {
       cleanup();
-      el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
-      el('sheetStatus').className = "status-pill status-off";
+      setSheetStatus("Zeitüberschreitung – Skript antwortet nicht", false);
     }, 10000);
     function cleanup(){
       clearTimeout(timeout);
@@ -163,25 +181,24 @@
     window[callbackName] = data => {
       cleanup();
       try {
-      if (!data.ok || !Array.isArray(data.orders)) throw new Error('Ungültige Antwort');
-      const localOrders = getOrders();
-      const remoteById = new Map(data.orders.map(order => [order.id, order]));
-      localOrders.forEach(order => remoteById.set(order.id, { ...remoteById.get(order.id), ...order }));
-      saveOrders(Array.from(remoteById.values()));
-      refresh();
-      el('sheetStatus').textContent = "Verbunden";
-      el('sheetStatus').className = "status-pill status-ok";
+        if (!data || !data.ok || !Array.isArray(data.orders)) throw new Error('Ungültige Antwort');
+        const localOrders = getOrders();
+        const remoteById = new Map(data.orders.map(order => [order.id, order]));
+        localOrders.forEach(order => remoteById.set(order.id, { ...remoteById.get(order.id), ...order }));
+        saveOrders(Array.from(remoteById.values()));
+        refresh();
+        setSheetStatus("Verbunden", true);
       } catch (error) {
-        el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
-        el('sheetStatus').className = "status-pill status-off";
+        setSheetStatus("Antwort ungültig – Skript-Deployment prüfen", false);
       }
     };
+    // Wenn der Script-Tag nicht ladbar ist (falsche URL, Skript nicht veröffentlicht, oder
+    // Zugriff nicht auf "Jeder" gestellt -> Google liefert eine Login-Seite statt JS zurück).
     script.onerror = () => {
       cleanup();
-      el('sheetStatus').textContent = "Verbindung fehlgeschlagen";
-      el('sheetStatus').className = "status-pill status-off";
+      setSheetStatus("Skript nicht erreichbar – URL/Freigabe prüfen", false);
     };
-    script.src = SHEET_URL + '?callback=' + encodeURIComponent(callbackName);
+    script.src = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + 'callback=' + encodeURIComponent(callbackName);
     document.head.appendChild(script);
   }
 
@@ -282,9 +299,8 @@
       el('dashScreen').style.display = 'block';
       el('pwError').classList.remove('is-visible');
       refresh();
-      el('sheetUrlInput').value = SHEET_URL;
-      el('sheetStatus').textContent = "Wird geladen";
-      el('sheetStatus').className = "status-pill status-off";
+      el('sheetUrlInput').value = getSheetUrl();
+      setSheetStatus("Wird geladen…", false);
       syncRemoteOrders();
     } else {
       el('pwError').classList.add('is-visible');
@@ -333,7 +349,13 @@
   });
 
   el('saveSheetUrlBtn').addEventListener('click', () => {
-    el('sheetUrlInput').value = SHEET_URL;
+    const url = el('sheetUrlInput').value.trim();
+    if (!url){
+      setSheetStatus("Keine URL hinterlegt", false);
+      return;
+    }
+    setSheetUrl(url);
+    setSheetStatus("Wird geladen…", false);
     syncRemoteOrders();
   });
 
@@ -342,9 +364,8 @@
     el('loginScreen').style.display = 'none';
     el('dashScreen').style.display = 'block';
     refresh();
-    el('sheetUrlInput').value = SHEET_URL;
-    el('sheetStatus').textContent = "Wird geladen";
-    el('sheetStatus').className = "status-pill status-off";
+    el('sheetUrlInput').value = getSheetUrl();
+    setSheetStatus("Wird geladen…", false);
     syncRemoteOrders();
   }
 })();

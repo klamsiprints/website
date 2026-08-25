@@ -28,7 +28,7 @@
       const imagePath = p.img || p.image;
       item.innerHTML = `
         <div class="product-thumb">
-          ${imagePath ? `<img src="${imagePath}" alt="${p.name}">` : p.icon}
+          ${imagePath ? `<img src="${imagePath}" alt="${p.name}" loading="lazy" decoding="async" width="56" height="56">` : p.icon}
         </div>
         <div class="product-info">
           <p class="product-name">${p.name}</p>
@@ -391,8 +391,9 @@
     orders.push(order);
     localStorage.setItem('klamsiprints_orders', JSON.stringify(orders));
 
-    // Optional: an Google Sheets senden, falls Admin eine Webhook-URL hinterlegt hat
-    const sheetUrl = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
+    // An Google Sheets senden. URL kommt aus dem Admin-Panel (falls dort geändert), sonst Standard-URL.
+    const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbzLazmx0vyPWP_-3LXhPIBmPrmZAm2ueuB7wooHXePGOEYfG4zQ60VGvJDDE2oAgVzn/exec";
+    const sheetUrl = localStorage.getItem('klamsiprints_sheet_url') || DEFAULT_SHEET_URL;
     if (sheetUrl){
       const payload = {
         id: order.id,
